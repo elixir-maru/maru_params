@@ -1,5 +1,5 @@
 # Maru Params
-> A standalone version of maru params parser which support phoenix framework.
+> A rebuild version of maru params parser which support phoenix framework.
 
 ## Installation
 
@@ -39,7 +39,7 @@ end
 
 ```elixir
 requires :category, Atom
-requires :role, Atom, values: [:role1, :role2]
+requires :role, Atom, values: [:role1, :role2], default: :role1
 optional :fruit, Atom, ecto_enum: {User, :fruit}
 ```
 
@@ -106,6 +106,44 @@ requires :data, Map
 ### String
 
 ```elixir
+optional :code, String, style: :upcase
+optional :code, String, style: :downcase
+optional :code, String, style: :camelcase
+optional :code, String, style: :snakecase
 optional :id, String, regex: ~r/\d{7,10}/
 optional :fruit, String, values: ["apple", "peach"]
+```
+
+## Pipeline Types
+
+```elixir
+requires :data, Base64
+%{"data" => "MTE="} -> %{data: "11"}
+
+requires :data, Base64 |> Integer
+%{"data" => "MTE="} -> %{data: 11}
+
+requires :data, Json
+%{"data" => ~s|["1", "2", "3"]|} -> %{data: ["1", "2", "3"]}
+
+requires :data, Json |> List[Integer]
+%{"data" => ~s|["1", "2", "3"]|} -> %{data: [1, 2, 3]}
+```
+
+## Nested Types
+
+```elixir
+requires :data, Map do
+  optional :id, Integer
+  optional :name, String
+end
+
+%{"data" => %{"id" => "1", "name" => "X"}} -> %{data: %{id: 1, name: "X"}}
+
+requires :data, List do
+  optional :id, Integer
+  optional :name, String
+end
+
+%{"data" => [%{"id" => "1", "name" => "X"}]} -> %{data: [%{id: 1, name: "X"}]}
 ```

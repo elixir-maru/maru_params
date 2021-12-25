@@ -2,6 +2,13 @@ defmodule Maru.Params.Types.String do
   @moduledoc """
   Buildin Type: String
 
+  ## Parser Arguments
+      * `:style` - string style
+        * `:upcase`
+        * `:downcase`
+        * `:camelcase`
+        * `:snakecase`
+
   ## Validator Arguments
       * `:regex` - validate input by regex
       * `:values` - validate input is one item of given values
@@ -9,16 +16,27 @@ defmodule Maru.Params.Types.String do
   ## Examples
     optional :id, String, regex: ~r/\d{7,10}/
     optional :fruit, String, values: ["apple", "peach"]
+    optional :code, String, style: :upcase
   """
 
   use Maru.Params.Type
 
+  def parser_arguments, do: [:style]
+
   def validator_arguments, do: [:regex, :values]
 
-  def parse(input, _) when is_binary(input), do: {:ok, input}
+  def parse(input, args) do
+    input = to_string(input)
 
-  def parse(input, _) do
-    {:ok, to_string(input)}
+    args
+    |> Map.get(:style)
+    |> case do
+      nil -> input
+      :upcase -> String.upcase(input)
+      :downcase -> String.downcase(input)
+      :snakecase -> Macro.underscore(input)
+      :camelcase -> Macro.camelcase(input)
+    end
   rescue
     _ -> {:error, :parse, "error parsing string"}
   end
