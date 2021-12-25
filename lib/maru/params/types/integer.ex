@@ -1,7 +1,9 @@
 defmodule Maru.Params.Types.Integer do
   @moduledoc """
-  Examples:
-    `optional :id, Integer`
+  Buildin Type: Integer
+
+  ## Examples
+      optional :age, Integer
   """
 
   use Maru.Params.Type
@@ -20,7 +22,6 @@ defmodule Maru.Params.Types.Integer do
   end
 
   def parse(input, _) do
-    input |> IO.inspect()
-    {:error, :parse, "unknown input format"}
+    {:error, :parse, "unknown input format as integer: #{inspect(input)}"}
   end
 end

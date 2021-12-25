@@ -20,7 +20,9 @@ defmodule MaruParams.MixProject do
   end
 
   defp deps do
-    []
+    [
+      {:jason, "~> 1.0 or ~> 1.1 or ~> 1.2 or ~> 1.3", optional: true}
+    ]
   end
 
   defp package do

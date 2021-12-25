@@ -1,8 +1,14 @@
 defmodule Maru.Params.Types.String do
   @moduledoc """
-  Examples:
-    `optional :id, String, regex: ~r/\d{7,10}/`
-    `optional :fruit, Datetime, values: ["apple", "peach"]`
+  Buildin Type: String
+
+  ## Validator Arguments
+      * `:regex` - validate input by regex
+      * `:values` - validate input is one item of given values
+
+  ## Examples
+    optional :id, String, regex: ~r/\d{7,10}/
+    optional :fruit, String, values: ["apple", "peach"]
   """
 
   use Maru.Params.Type

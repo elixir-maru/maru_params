@@ -1,27 +1,57 @@
 defmodule Maru.Params.Types.DateTime do
   @moduledoc """
-  Example: `optional :date, Datetime, format: "iso8601"`
+  Buildin Type: DateTime
+
+  ## Parser Arguments
+      * `:format` - how to parse a datetime value
+        * `:iso8601` - parse by `DateTime.from_iso8601/2` or `NaiveDateTime.from_iso8601/2`
+        * `{:unix, unit}` - parse by `DateTime.from_unix/2`
+        * `:unix - parse by `DateTime.from_unix/1`
+          * `:unit` - unit for unix datetime
+            * `:second` (default)
+            * `:millisecond`
+            * `:microsecond`
+            * `:nanosecond`
+      * `:naive` - return `DateTime` or `NaiveDateTime` struct
+        * `false` (default) - return `DateTime` struct
+        * `true` - return `NaiveDateTime` struct
+      * `:truncate` - unit to truncate the output
+        * `:microsecond`
+        * `:millisecond`
+        * `:second`
+
+  ## Examples:
+      requires :created, DateTime, format: :iso8601, naive: true
+      optional :updated, DateTime, format: {:unix, :second}, truncate: :second
   """
 
   use Maru.Params.Type
 
   def parser_arguments, do: [:format, :naive, :truncate]
 
-  def parse(input, %{format: "iso8601"}=args) do
-    module = if Map.get(args, :naive), do: NaiveDateTime, else: DateTime
+  def parse(input, %{format: format} = args) do
+    naive = Map.get(args, :naive, false)
+    unit = Map.get(args, :truncate)
 
-    case module.from_iso8601(input) do
-      {:ok, datetime, _} ->
-        case Map.get(args, :truncate) do
-          nil -> {:ok, datetime}
-          unit -> {:ok, module.truncate(datetime, unit)}
-        end
-      _ ->
-        {:error, :parse, "invalid iso8601 format"}
+    format
+    |> case do
+      :iso8601 when naive -> NaiveDateTime.from_iso8601(input)
+      :iso8601 -> DateTime.from_iso8601(input)
+      :unix -> input |> DateTime.from_unix()
+      {:unix, unix_unit} -> DateTime.from_unix(input, unix_unit)
+      _ -> {:error, "unsupported format"}
     end
-  end
-
-  def parse(_input, %{format: format}) do
-    {:error, :parse, "unsupported format #{format}"}
+    |> case do
+      {:ok, %DateTime{} = datetime, _} when naive -> {:ok, DateTime.to_naive(datetime)}
+      {:ok, %DateTime{} = datetime, _} -> {:ok, datetime}
+      {:ok, %NaiveDateTime{} = datetime, _} -> {:ok, datetime}
+      {:error, reason} -> {:error, reason}
+    end
+    |> case do
+      {:ok, %DateTime{} = t} when unit -> {:ok, DateTime.truncate(t, unit)}
+      {:ok, %NaiveDateTime{} = t} when unit -> {:ok, NaiveDateTime.truncate(t, unit)}
+      {:ok, datetime} -> {:ok, datetime}
+      {:error, reason} -> {:error, :parse, "#{inspect(reason)}: #{inspect(format)}"}
+    end
   end
 end

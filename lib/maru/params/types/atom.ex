@@ -1,10 +1,16 @@
 defmodule Maru.Params.Types.Atom do
   @moduledoc """
-  Examples:
-    `optional :role, Atom, values: [:role1, :role2]`
-    `optional :fruit, Atom, ecto_enum: {User, :fruit}`
-    `optional :fruit, Atom, ecto_enum: User`
+  Buildin Type: Atom
+
+  ## Validator Arguments
+      * `:ecto_enum` - validate input by `Ecto.Enum.dump_values/2`
+      * `:values` - validate output is one item of given values
+
+  ## Examples
+      optional :role, Atom, values: [:role1, :role2]
+      optional :fruit, Atom, ecto_enum: {User, :fruit}
   """
+
   use Maru.Params.Type
 
   def parser_arguments, do: [:ecto_enum]
