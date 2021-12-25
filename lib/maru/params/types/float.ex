@@ -20,10 +20,18 @@ defmodule Maru.Params.Types.Float do
     args
     |> Map.get(:style, :native)
     |> case do
-      :native when is_float(input) -> {:ok, input}
-      :native when is_integer(input) -> {:ok, :erlang.float(input)}
-      :native when is_binary(input) -> {:ok, parsed} = Elixir.Float.parse(input)
-      :decimals -> {:ok, input |> to_string() |> Decimal.new()}
+      :native when is_float(input) ->
+        {:ok, input}
+
+      :native when is_integer(input) ->
+        {:ok, :erlang.float(input)}
+
+      :native when is_binary(input) ->
+        {parsed, _} = Elixir.Float.parse(input)
+        {:ok, parsed}
+
+      :decimals ->
+        {:ok, input |> to_string() |> Decimal.new()}
     end
   rescue
     _ -> {:error, :parse, "unknown format as float: #{inspect(input)}"}

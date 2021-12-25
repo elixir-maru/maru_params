@@ -1,0 +1,2 @@
+defmodule MaruParamsTest do
+end

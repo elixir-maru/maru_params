@@ -44,13 +44,16 @@ defmodule Maru.Params.Types.DateTime do
     |> case do
       {:ok, %DateTime{} = datetime, _} when naive -> {:ok, DateTime.to_naive(datetime)}
       {:ok, %DateTime{} = datetime, _} -> {:ok, datetime}
+      {:ok, %DateTime{} = datetime} when naive -> {:ok, DateTime.to_naive(datetime)}
+      {:ok, %DateTime{} = datetime} -> {:ok, datetime}
       {:ok, %NaiveDateTime{} = datetime, _} -> {:ok, datetime}
+      {:ok, %NaiveDateTime{} = datetime} -> {:ok, datetime}
       {:error, reason} -> {:error, reason}
     end
     |> case do
-      {:ok, %DateTime{} = t} when unit -> {:ok, DateTime.truncate(t, unit)}
-      {:ok, %NaiveDateTime{} = t} when unit -> {:ok, NaiveDateTime.truncate(t, unit)}
-      {:ok, datetime} -> {:ok, datetime}
+      {:ok, datetime} when is_nil(unit) -> {:ok, datetime}
+      {:ok, %DateTime{} = t} -> {:ok, DateTime.truncate(t, unit)}
+      {:ok, %NaiveDateTime{} = t} -> {:ok, NaiveDateTime.truncate(t, unit)}
       {:error, reason} -> {:error, :parse, "#{inspect(reason)}: #{inspect(format)}"}
     end
   end

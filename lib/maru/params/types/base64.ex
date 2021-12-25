@@ -11,6 +11,8 @@ defmodule Maru.Params.Types.Base64 do
 
   use Maru.Params.Type
 
+  def parser_arguments, do: [:options]
+
   def parse(input, args) do
     options = Map.get(args, :options, [])
 

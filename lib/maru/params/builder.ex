@@ -4,66 +4,98 @@ defmodule Maru.Params.Builder do
   defmacro __using__(_) do
     quote do
       import unquote(__MODULE__)
-      Module.register_attribute(__MODULE__, :actions, accumulate: true)
       @params []
-      @before_compile unquote(__MODULE__)
     end
   end
 
-  defmacro optional(name, type) do
-    type = expand_alias(type, __CALLER__)
-    args = Macro.escape(%{__name__: name, __type__: type, __required__: false})
+  for {method, required} <- [{:optional, false}, {:requires, true}] do
+    defmacro unquote(method)(name, do: block) do
+      args = Macro.escape(%{__name__: name, __type__: Map, __required__: unquote(required)})
 
-    quote do
-      unquote(args) |> build_param() |> push_param(__ENV__)
+      quote do
+        params = unquote(__MODULE__).pop_params(__ENV__)
+        unquote(block)
+        nested_params = unquote(__MODULE__).pop_params(__ENV__)
+        unquote(__MODULE__).put_params(params, __ENV__)
+
+        unquote(args)
+        |> Map.put(:children, nested_params)
+        |> build_param()
+        |> push_param(__ENV__)
+      end
     end
-  end
 
-  defmacro optional(name, type, options) do
-    type = expand_alias(type, __CALLER__)
+    defmacro unquote(method)(name, type) do
+      type = expand_alias(type, __CALLER__)
+      args = Macro.escape(%{__name__: name, __type__: type, __required__: unquote(required)})
 
-    args =
-      %{__name__: name, __type__: type, __required__: false}
-      |> Map.merge(Map.new(options))
-      |> Macro.escape()
-
-    quote do
-      unquote(args) |> build_param() |> push_param(__ENV__)
+      quote do
+        unquote(args) |> build_param() |> push_param(__ENV__)
+      end
     end
-  end
 
-  defmacro requires(name, type) do
-    type = expand_alias(type, __CALLER__)
-    args = Macro.escape(%{__name__: name, __type__: type, __required__: true})
+    defmacro unquote(method)(name, type, do: block) do
+      type = expand_alias(type, __CALLER__)
+      args = Macro.escape(%{__name__: name, __type__: type, __required__: unquote(required)})
 
-    quote do
-      unquote(args) |> build_param() |> push_param(__ENV__)
+      quote do
+        params = unquote(__MODULE__).pop_params(__ENV__)
+        unquote(block)
+        nested_params = unquote(__MODULE__).pop_params(__ENV__)
+        unquote(__MODULE__).put_params(params, __ENV__)
+
+        unquote(args)
+        |> Map.put(:children, nested_params)
+        |> build_param()
+        |> push_param(__ENV__)
+      end
     end
-  end
 
-  defmacro requires(name, type, options) do
-    type = expand_alias(type, __CALLER__)
+    defmacro unquote(method)(name, type, options) do
+      type = expand_alias(type, __CALLER__)
 
-    args =
-      %{__name__: name, __type__: type, __required__: true}
-      |> Map.merge(Map.new(options))
-      |> Macro.escape()
+      args =
+        %{__name__: name, __type__: type, __required__: unquote(required)}
+        |> Map.merge(Map.new(options))
+        |> Macro.escape()
 
-    quote do
-      unquote(args) |> build_param() |> push_param(__ENV__)
+      quote do
+        unquote(args) |> build_param() |> push_param(__ENV__)
+      end
+    end
+
+    defmacro unquote(method)(name, type, options, do: block) do
+      type = expand_alias(type, __CALLER__)
+
+      args =
+        %{__name__: name, __type__: type, __required__: unquote(required)}
+        |> Map.merge(Map.new(options))
+        |> Macro.escape()
+
+      quote do
+        params = unquote(__MODULE__).pop_params(__ENV__)
+        unquote(block)
+        nested_params = unquote(__MODULE__).pop_params(__ENV__)
+        unquote(__MODULE__).put_params(params, __ENV__)
+
+        unquote(args)
+        |> Map.put(:children, nested_params)
+        |> build_param()
+        |> push_param(__ENV__)
+      end
     end
   end
 
   def build_param(args) do
     accumulator = %{
-      args: args,
+      args: Map.put_new(args, :children, []),
       runtime:
         quote do
           %Runtime{}
         end
     }
 
-    [:name, :type, :blank_func]
+    [:name, :type, :blank_func, :children]
     |> Enum.reduce(accumulator, &do_build_param/2)
     |> Map.take([:runtime])
   end
@@ -88,8 +120,9 @@ defmodule Maru.Params.Builder do
       parsers
       |> List.last()
       |> case do
-        {:module, Maru.Types.Map} -> :map
-        {:module, Maru.Types.List} -> :list
+        {:module, Maru.Params.Types.Map} -> :map
+        {:module, Maru.Params.Types.List} -> :list_of_map
+        {:list, _} -> :list_of_single
         _ -> nil
       end
 
@@ -142,6 +175,18 @@ defmodule Maru.Params.Builder do
     }
   end
 
+  defp do_build_param(:children, %{args: args, runtime: runtime}) do
+    children_runtime = args |> Map.get(:children) |> Enum.map(&Map.get(&1, :runtime))
+
+    %{
+      args: args,
+      runtime:
+        quote do
+          %{unquote(runtime) | children: unquote(children_runtime)}
+        end
+    }
+  end
+
   defp do_build_type({:fn, _, _} = func) do
     [{:func, func}]
   end
@@ -152,6 +197,10 @@ defmodule Maru.Params.Builder do
 
   defp do_build_type({:|>, _, [left, right]}) do
     do_build_type(left) ++ do_build_type(right)
+  end
+
+  defp do_build_type({{:., _, [Access, :get]}, _, [List, nested]}) do
+    do_build_type(List) ++ [{:list, do_build_type(nested)}]
   end
 
   defp do_build_type(type) do
@@ -168,11 +217,27 @@ defmodule Maru.Params.Builder do
 
     block =
       Enum.reduce(parsers, value, fn
+        {:list, nested}, ast ->
+          nested_ast = do_build_parser(nested, args)
+
+          quote do
+            case unquote(ast) do
+              {:ok, value} ->
+                value
+                |> Enum.map(fn item -> {:ok, item} end)
+                |> Enum.map(unquote(nested_ast))
+                |> then(fn value -> {:ok, value} end)
+
+              error ->
+                error
+            end
+          end
+
         {:func, func}, ast ->
           quote do
             case unquote(ast) do
               {:ok, value} -> unquote(func).(value)
-              error -> errro
+              error -> error
             end
           end
 
@@ -180,7 +245,7 @@ defmodule Maru.Params.Builder do
           parser_args =
             args
             |> Map.take(module.parser_arguments())
-            |> Enum.to_list()
+            |> Macro.escape()
 
           validator_args =
             args
@@ -218,6 +283,10 @@ defmodule Maru.Params.Builder do
     Module.put_attribute(module, :params, params ++ List.wrap(param))
   end
 
+  def put_params(params, %Macro.Env{module: module}) do
+    Module.put_attribute(module, :params, params)
+  end
+
   def pop_params(%Macro.Env{module: module}) do
     params = Module.get_attribute(module, :params)
     Module.put_attribute(module, :params, [])
@@ -228,22 +297,6 @@ defmodule Maru.Params.Builder do
     Macro.prewalk(ast, fn
       {:__aliases__, _, _} = module -> Macro.expand(module, caller)
       other -> other
-    end)
-  end
-
-  defmacro __before_compile__(%Macro.Env{module: module}) do
-    module
-    |> Module.get_attribute(:actions)
-    |> Enum.map(fn {action, params} ->
-      params_runtime = Enum.map(params, &Map.get(&1, :runtime))
-
-      quote do
-        defoverridable [{unquote(action), 2}]
-
-        def unquote(action)(conn, params) do
-          super(conn, Runtime.parse_params(unquote(params_runtime), params))
-        end
-      end
     end)
   end
 end

@@ -12,6 +12,10 @@ def deps do
     # and config with `config :maru_params, json_library, YOUR_JSON_LIBRARY`.
     {:jason, "~> 1.3"},
 
+
+    # Optional dependency to support `ecto_enum` validator for atom
+    {:ecto, "~> 3.0"},
+
     # Optional dependency to support `Plug.File` type
     {:plug, "~> 1.12"},
 
@@ -119,7 +123,7 @@ optional :code, String, style: :upcase
 optional :code, String, style: :downcase
 optional :code, String, style: :camelcase
 optional :code, String, style: :snakecase
-optional :id, String, regex: ~r/\d{7,10}/
+optional :id, String, regex: ~r/^\d{7,10}$/
 optional :fruit, String, values: ["apple", "peach"]
 ```
 
@@ -137,6 +141,12 @@ requires :data, Json
 
 requires :data, Json |> List[Integer]
 %{"data" => ~s|["1", "2", "3"]|} -> %{data: [1, 2, 3]}
+
+requires :data, Base64 |> List[Integer]
+%{"data" => "WyIxIiwgIjIiLCAiMyJd"} -> %{data: [1, 2, 3]}
+
+requires :data, List[Base64 |> Integer]
+%{"data" => ["MTE=", "MTE="]} -> %{data: [11, 11]}
 ```
 
 ## Nested Types
@@ -162,35 +172,36 @@ end
 ```elixir
 optional :a, String
 %{} -> %{}
-%{a: null} -> %{}
+%{a: nil} -> %{}
 %{a: ""} -> %{}
 
 optional :a, String, keep_blank: true
-%{a: null} -> %{a: null}
+%{a: nil} -> %{a: nil}
 %{a: ""} -> %{a: ""}
 
 optional :a, String, default: "test"
 %{} -> %{a: "test"}
 
 optional :a, String, keep_blank: true, default: "test"
-%{a: null} -> %{a: null}
+%{a: nil} -> %{a: nil}
 %{a: ""} -> %{a: ""}
 
 requires :a, String
 %{} -> # raise exception
-%{a: null} -> # raise exception
+%{a: nil} -> # raise exception
 %{a: ""} -> # raise exception
 
 requires :a, String, keep_blank: true
-%{a: null} -> %{a: null}
+%{a: nil} -> %{a: nil}
 %{a: ""} -> %{a: ""}
 
 requires :a, String, default: "test"
 %{} -> %{a: "test"}
-%{a: null} -> %{a: "test"}
+%{a: nil} -> %{a: "test"}
+%{a: ""} -> %{a: "test"}
 
 requires :a, String, keep_blank: true, default: "test"
-%{a: null} -> %{a: null}
+%{a: nil} -> %{a: nil}
 %{a: ""} -> %{a: ""}
 ```
 
