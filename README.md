@@ -68,6 +68,7 @@ optional :updated, DateTime, format: :iso8601, truncate: :second
 
 ```elixir
 optional :pi, Float
+optional :pi, Float, style: :decimals
 ```
 
 ### Integer

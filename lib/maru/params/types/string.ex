@@ -35,7 +35,7 @@ defmodule Maru.Params.Types.String do
       :upcase -> String.upcase(input)
       :downcase -> String.downcase(input)
       :snakecase -> Macro.underscore(input)
-      :camelcase -> Macro.camelcase(input)
+      :camelcase -> Macro.camelize(input)
     end
   rescue
     _ -> {:error, :parse, "error parsing string"}

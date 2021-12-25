@@ -2,22 +2,30 @@ defmodule Maru.Params.Types.Float do
   @moduledoc """
   Buildin Type: Float
 
+  ## Parser Arguments
+      * style - float style
+        * `:native` (default) - native float
+        * `:decimals` - uses `Decimal.new/1` to parse the binary
+
   ## Examples:
       optional :pi, Float
+      optional :pi, Float, style: :decimals
   """
 
   use Maru.Params.Type
 
-  @doc false
-  def parse(input, _) when is_float(input), do: {:ok, input}
-  def parse(input, _) when is_integer(input), do: {:ok, :erlang.float(input)}
+  def parser_arguments, do: [:style]
 
-  def parse(input, _) when is_binary(input) do
-    case Elixir.Float.parse(input) do
-      {parsed, _} -> {:ok, parsed}
-      :error -> {:error, :parse, "unable to parse float from string: #{input}"}
+  def parse(input, args) do
+    args
+    |> Map.get(:style, :native)
+    |> case do
+      :native when is_float(input) -> {:ok, input}
+      :native when is_integer(input) -> {:ok, :erlang.float(input)}
+      :native when is_binary(input) -> {:ok, parsed} = Elixir.Float.parse(input)
+      :decimals -> {:ok, input |> to_string() |> Decimal.new()}
     end
+  rescue
+    _ -> {:error, :parse, "unknown format as float: #{inspect(input)}"}
   end
-
-  def parse(input, _), do: {:error, :parse, "unknown format as float: #{inspect(input)}"}
 end

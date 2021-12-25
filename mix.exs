@@ -9,7 +9,12 @@ defmodule MaruParams.MixProject do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      package: package()
+      description: "A rebuild version maru params parser which support phoenix.",
+      package: package(),
+      docs: [
+        extras: ["README.md"],
+        main: "readme"
+      ]
     ]
   end
 
@@ -21,7 +26,10 @@ defmodule MaruParams.MixProject do
 
   defp deps do
     [
-      {:jason, "~> 1.0 or ~> 1.1 or ~> 1.2 or ~> 1.3", optional: true}
+      {:decimal, "~> 1.0 or ~> 2.0", optional: true},
+      {:plug, "~> 1.10", optional: true},
+      {:jason, "~> 1.0", optional: true},
+      {:ex_doc, "~> 0.26", only: :docs}
     ]
   end
 
