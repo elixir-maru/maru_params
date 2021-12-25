@@ -147,3 +147,48 @@ end
 
 %{"data" => [%{"id" => "1", "name" => "X"}]} -> %{data: [%{id: 1, name: "X"}]}
 ```
+
+## Default Values and Blank Values
+
+```elixir
+optional :a, String
+%{} -> %{}
+%{a: null} -> %{}
+%{a: ""} -> %{}
+
+optional :a, String, keep_blank: true
+%{a: null} -> %{a: null}
+%{a: ""} -> %{a: ""}
+
+optional :a, String, default: "test"
+%{} -> %{a: "test"}
+
+optional :a, String, keep_blank: true, default: "test"
+%{a: null} -> %{a: null}
+%{a: ""} -> %{a: ""}
+
+requires :a, String
+%{} -> # raise exception
+%{a: null} -> # raise exception
+%{a: ""} -> # raise exception
+
+requires :a, String, keep_blank: true
+%{a: null} -> %{a: null}
+%{a: ""} -> %{a: ""}
+
+requires :a, String, default: "test"
+%{} -> %{a: "test"}
+%{a: null} -> %{a: "test"}
+
+requires :a, String, keep_blank: true, default: "test"
+%{a: null} -> %{a: null}
+%{a: ""} -> %{a: ""}
+```
+
+## Rename
+
+```elixir
+optional :a, String, source: "b"
+
+%{b: "1"} -> %{a: "1"}
+```
