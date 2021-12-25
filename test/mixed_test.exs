@@ -116,7 +116,6 @@ defmodule Maru.Params.MixedTest do
       T.blank_requires_1(%{a: ""})
     end
 
-
     assert %{a: "a"} = T.blank_requires_2(%{"a" => "a"})
     assert %{a: nil} = T.blank_requires_2(%{"a" => nil})
     assert %{a: ""} = T.blank_requires_2(%{"a" => ""})

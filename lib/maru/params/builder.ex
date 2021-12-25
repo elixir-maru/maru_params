@@ -89,6 +89,7 @@ defmodule Maru.Params.Builder do
   def build_param(args) do
     accumulator = %{
       args: Map.put_new(args, :children, []),
+      info: [],
       runtime:
         quote do
           %Runtime{}
@@ -97,15 +98,16 @@ defmodule Maru.Params.Builder do
 
     [:name, :type, :blank_func, :children]
     |> Enum.reduce(accumulator, &do_build_param/2)
-    |> Map.take([:runtime])
+    |> Map.take([:runtime, :info])
   end
 
-  defp do_build_param(:name, %{args: args, runtime: runtime}) do
+  defp do_build_param(:name, %{args: args, info: info, runtime: runtime}) do
     name = Map.fetch!(args, :__name__)
     source = Map.get(args, :source, to_string(name))
 
     %{
       args: args,
+      info: Keyword.put(info, :name, name),
       runtime:
         quote do
           %{unquote(runtime) | name: unquote(name), source: unquote(source)}
@@ -113,7 +115,7 @@ defmodule Maru.Params.Builder do
     }
   end
 
-  defp do_build_param(:type, %{args: args, runtime: runtime}) do
+  defp do_build_param(:type, %{args: args, info: info, runtime: runtime}) do
     parsers = args |> Map.get(:__type__) |> do_build_type()
 
     nested =
@@ -130,6 +132,7 @@ defmodule Maru.Params.Builder do
 
     %{
       args: args,
+      info: info,
       runtime:
         quote do
           %{unquote(runtime) | parser_func: unquote(func), nested: unquote(nested)}
@@ -137,7 +140,7 @@ defmodule Maru.Params.Builder do
     }
   end
 
-  defp do_build_param(:blank_func, %{args: args, runtime: runtime}) do
+  defp do_build_param(:blank_func, %{args: args, info: info, runtime: runtime}) do
     has_default? = args |> Map.has_key?(:default)
     required? = args |> Map.fetch!(:__required__)
     name = args |> Map.fetch!(:__name__)
@@ -168,6 +171,7 @@ defmodule Maru.Params.Builder do
 
     %{
       args: args,
+      info: info,
       runtime:
         quote do
           %{unquote(runtime) | blank_func: unquote(func)}
@@ -175,11 +179,12 @@ defmodule Maru.Params.Builder do
     }
   end
 
-  defp do_build_param(:children, %{args: args, runtime: runtime}) do
+  defp do_build_param(:children, %{args: args, info: info, runtime: runtime}) do
     children_runtime = args |> Map.get(:children) |> Enum.map(&Map.get(&1, :runtime))
 
     %{
       args: args,
+      info: info,
       runtime:
         quote do
           %{unquote(runtime) | children: unquote(children_runtime)}
