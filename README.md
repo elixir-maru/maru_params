@@ -172,37 +172,37 @@ end
 ```elixir
 optional :a, String
 %{} -> %{}
-%{a: nil} -> %{}
-%{a: ""} -> %{}
+%{"a" => nil} -> %{}
+%{"a" => ""} -> %{}
 
 optional :a, String, keep_blank: true
-%{a: nil} -> %{a: nil}
-%{a: ""} -> %{a: ""}
+%{"a" => nil} -> %{a: nil}
+%{"a" => ""} -> %{a: ""}
 
 optional :a, String, default: "test"
 %{} -> %{a: "test"}
 
 optional :a, String, keep_blank: true, default: "test"
-%{a: nil} -> %{a: nil}
-%{a: ""} -> %{a: ""}
+%{"a" => nil} -> %{a: nil}
+%{"a" => ""} -> %{a: ""}
 
 requires :a, String
 %{} -> # raise exception
-%{a: nil} -> # raise exception
-%{a: ""} -> # raise exception
+%{"a" => nil} -> # raise exception
+%{"a" => ""} -> # raise exception
 
 requires :a, String, keep_blank: true
-%{a: nil} -> %{a: nil}
-%{a: ""} -> %{a: ""}
+%{"a" => nil} -> %{a: nil}
+%{"a" => ""} -> %{a: ""}
 
 requires :a, String, default: "test"
 %{} -> %{a: "test"}
-%{a: nil} -> %{a: "test"}
-%{a: ""} -> %{a: "test"}
+%{"a" => nil} -> %{a: "test"}
+%{"a" => ""} -> %{a: "test"}
 
 requires :a, String, keep_blank: true, default: "test"
-%{a: nil} -> %{a: nil}
-%{a: ""} -> %{a: ""}
+%{"a" => nil} -> %{a: nil}
+%{"a" => ""} -> %{a: ""}
 ```
 
 ## Rename
@@ -210,5 +210,5 @@ requires :a, String, keep_blank: true, default: "test"
 ```elixir
 optional :a, String, source: "b"
 
-%{b: "1"} -> %{a: "1"}
+%{"b" => "1"} -> %{a: "1"}
 ```
