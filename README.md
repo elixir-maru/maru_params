@@ -10,7 +10,15 @@ def deps do
 
     # Optional dependency, you can also add your own json_library dependency
     # and config with `config :maru_params, json_library, YOUR_JSON_LIBRARY`.
-    {:jason, "~> 1.3"}
+    {:jason, "~> 1.3"},
+
+    # Optional dependency to support `Plug.File` type
+    {:plug, "~> 1.12"},
+
+    # Optional dependency to support `Decimal` float
+    {:decimal, "~> 2.0"},
+
+    ...
   ]
 end
 ```
