@@ -8,15 +8,23 @@ defmodule Maru.Params.Runtime do
             parser_func: nil,
             validate_func: nil
 
-  def parse_params(params_runtime, params) do
-    parse_params(params_runtime, params, %{})
+  def parse_params(params_runtime, params, options \\ []) do
+    parse_params(params_runtime, params, options, %{})
   end
 
-  def parse_params([], _params, result), do: result
+  def parse_params([], _params, _options, result), do: result
 
-  def parse_params([h | t], params, result) do
-    passed? = Map.has_key?(params, h.source)
-    value = Map.get(params, h.source)
+  def parse_params([h | t], params, options, result) do
+    source =
+      case Keyword.get(options, :keys, :strings) do
+        :strings -> to_string(h.source)
+        _ when is_atom(h.source) -> h.source
+        :atoms when is_binary(h.source) -> String.to_atom(h.source)
+        :atoms! when is_binary(h.source) -> String.to_existing_atom(h.source)
+      end
+
+    passed? = Map.has_key?(params, source)
+    value = Map.get(params, source)
     nested = h.nested
 
     parsed =
@@ -28,18 +36,18 @@ defmodule Maru.Params.Runtime do
 
     case parsed do
       :ignore ->
-        parse_params(t, params, result)
+        parse_params(t, params, options, result)
 
       {:error, step, reason} ->
         raise "Params Parse Error: #{step}, #{reason}"
 
       {:ok, value} when nested == :map ->
-        value = parse_params(h.children, value, %{})
-        parse_params(t, params, Map.put(result, h.name, value))
+        value = parse_params(h.children, value, options, %{})
+        parse_params(t, params, options, Map.put(result, h.name, value))
 
       {:ok, value} when nested == :list_of_map ->
-        value = Enum.map(value, fn item -> parse_params(h.children, item, %{}) end)
-        parse_params(t, params, Map.put(result, h.name, value))
+        value = Enum.map(value, fn item -> parse_params(h.children, item, options, %{}) end)
+        parse_params(t, params, options, Map.put(result, h.name, value))
 
       {:ok, value} when nested == :list_of_single ->
         value =
@@ -48,10 +56,10 @@ defmodule Maru.Params.Runtime do
             {:error, step, reason} -> raise "Params Parse Error: #{step}, #{reason}"
           end)
 
-        parse_params(t, params, Map.put(result, h.name, value))
+        parse_params(t, params, options, Map.put(result, h.name, value))
 
       {:ok, value} when nested == nil ->
-        parse_params(t, params, Map.put(result, h.name, value))
+        parse_params(t, params, options, Map.put(result, h.name, value))
     end
   end
 end

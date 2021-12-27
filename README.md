@@ -208,7 +208,7 @@ requires :a, String, keep_blank: true, default: "test"
 ## Rename
 
 ```elixir
-optional :a, String, source: "b"
+optional :a, String, source: :b
 
 %{"b" => "1"} -> %{a: "1"}
 ```

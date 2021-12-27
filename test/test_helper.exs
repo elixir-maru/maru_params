@@ -24,8 +24,8 @@ defmodule Maru.Params.TestHelper do
       params_runtime = Enum.map(params, &Map.get(&1, :runtime))
 
       quote do
-        def unquote(action)(params) do
-          Maru.Params.Runtime.parse_params(unquote(params_runtime), params)
+        def unquote(action)(params, options \\ []) do
+          Maru.Params.Runtime.parse_params(unquote(params_runtime), params, options)
         end
       end
     end)

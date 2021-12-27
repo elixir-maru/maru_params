@@ -57,7 +57,12 @@ defmodule Maru.Params.MixedTest do
     end
 
     params :rename do
-      requires :a, String, source: "b"
+      optional :x, String, source: :b
+      optional :y, String, source: "c"
+    end
+
+    params :atoms_keys do
+      optional :z, String, source: "do_not_existed_atom"
     end
   end
 
@@ -136,6 +141,16 @@ defmodule Maru.Params.MixedTest do
   end
 
   test "rename" do
-    assert %{a: "a"} = T.rename(%{"b" => "a"})
+    assert %{x: "x"} = T.rename(%{"b" => "x"}, keys: :strings)
+    assert %{y: "y"} = T.rename(%{"c" => "y"}, keys: :strings)
+  end
+
+  test "atom key" do
+    assert %{x: "x"} = T.rename(%{b: "x"}, keys: :atoms!)
+    assert %{y: "y"} = T.rename(%{c: "y"}, keys: :atoms)
+
+    assert_raise ArgumentError, ~r/errors were found at the given arguments/, fn ->
+      T.atoms_keys(%{"do_not_existed_atom" => "z"}, keys: :atoms!)
+    end
   end
 end
