@@ -27,9 +27,10 @@ defmodule Maru.Params.Types.DateTime do
 
   use Maru.Params.Type
 
-  def parser_arguments, do: [:format, :naive, :truncate]
+  def parser_arguments, do: [:format, :naive, :truncate, :time_zone]
 
-  def parse(input, %{format: format} = args) do
+  def parse(input, args) do
+    format = Map.get(args, :format)
     naive = Map.get(args, :naive, false)
     unit = Map.get(args, :truncate)
 
@@ -39,6 +40,8 @@ defmodule Maru.Params.Types.DateTime do
       :iso8601 -> DateTime.from_iso8601(input)
       :unix -> input |> DateTime.from_unix()
       {:unix, unix_unit} -> DateTime.from_unix(input, unix_unit)
+      _ when is_struct(input, DateTime) -> {:ok, input}
+      _ when is_struct(input, NaiveDateTime) -> {:ok, input}
       _ -> {:error, "unsupported format"}
     end
     |> case do
@@ -46,6 +49,8 @@ defmodule Maru.Params.Types.DateTime do
       {:ok, %DateTime{} = datetime, _} -> {:ok, datetime}
       {:ok, %DateTime{} = datetime} when naive -> {:ok, DateTime.to_naive(datetime)}
       {:ok, %DateTime{} = datetime} -> {:ok, datetime}
+      {:ok, %NaiveDateTime{}, _} when not naive -> {:error, "unknown naive timezone"}
+      {:ok, %NaiveDateTime{}} when not naive -> {:error, "unknown naive timezone"}
       {:ok, %NaiveDateTime{} = datetime, _} -> {:ok, datetime}
       {:ok, %NaiveDateTime{} = datetime} -> {:ok, datetime}
       {:error, reason} -> {:error, reason}

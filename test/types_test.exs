@@ -35,6 +35,8 @@ defmodule Maru.Params.TypesTest do
       optional :d08, DateTime, format: :iso8601, naive: true, truncate: :second
       optional :d09, DateTime, format: {:unix, :microsecond}, truncate: :millisecond
       optional :d10, DateTime, format: {:unix, :microsecond}, naive: true, truncate: :second
+      optional :d11, DateTime
+      optional :d12, DateTime, naive: true
     end
 
     params :float do
@@ -125,6 +127,14 @@ defmodule Maru.Params.TypesTest do
                "d09" => 1_432_560_368_868_569,
                "d10" => 1_432_560_368_868_569
              })
+
+    assert %{d11: ~U[2015-05-25 13:26:08Z]} = T.datetime(%{"d11" => ~U[2015-05-25 13:26:08Z]})
+    assert %{d12: ~N[2015-05-25 13:26:08]} = T.datetime(%{"d12" => ~U[2015-05-25 13:26:08Z]})
+    assert %{d12: ~N[2015-05-25 13:26:08]} = T.datetime(%{"d12" => ~N[2015-05-25 13:26:08]})
+
+    assert_raise RuntimeError, ~r/Params Parse Error: parse/, fn ->
+      T.datetime(%{"d11" => ~N[2015-05-25 13:26:08Z]})
+    end
   end
 
   test "float" do
