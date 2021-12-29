@@ -1,6 +1,8 @@
 defmodule Maru.Params.CustomTypeTest do
   use ExUnit.Case, async: true
 
+  alias Maru.Params.TypeError
+
   defmodule T do
     use Maru.Params.TestHelper
 
@@ -40,5 +42,16 @@ defmodule Maru.Params.CustomTypeTest do
 
   test "derive" do
     assert {:ok, ~s|{"id":1,"name":"11"}|} = Jason.encode(%Test.CustomTypeA{id: 1, name: "11"})
+  end
+
+  test "undefined type" do
+    assert_raise TypeError, fn ->
+      defmodule T2 do
+        use Maru.Params.TestHelper
+        params :test do
+          optional :a, UndefinedCustomType
+        end
+      end
+    end
   end
 end

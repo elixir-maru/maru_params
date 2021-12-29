@@ -1,5 +1,5 @@
 defmodule Maru.Params.Builder do
-  alias Maru.Params.Runtime
+  alias Maru.Params.{Runtime, TypeError}
 
   defmacro __using__(_) do
     quote do
@@ -214,7 +214,7 @@ defmodule Maru.Params.Builder do
     [{:module, module}]
   rescue
     UndefinedFunctionError ->
-      raise "undefined type"
+      raise TypeError, type: type, reason: "Undefined Type"
   end
 
   def do_build_parser(parsers, args) do

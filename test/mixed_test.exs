@@ -1,6 +1,8 @@
 defmodule Maru.Params.MixedTest do
   use ExUnit.Case, async: true
 
+  alias Maru.Params.ParseError
+
   defmodule T do
     use Maru.Params.TestHelper
 
@@ -109,15 +111,15 @@ defmodule Maru.Params.MixedTest do
   test "blank requires" do
     assert %{a: "a"} = T.blank_requires_1(%{"a" => "a"})
 
-    assert_raise RuntimeError, ~r/Params Parse Error: parse/, fn ->
+    assert_raise ParseError, ~r/Parse Parameter a Error/, fn ->
       T.blank_requires_1(%{})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error: parse/, fn ->
+    assert_raise ParseError, ~r/Parse Parameter a Error/, fn ->
       T.blank_requires_1(%{a: nil})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error: parse/, fn ->
+    assert_raise ParseError, ~r/Parse Parameter a Error/, fn ->
       T.blank_requires_1(%{a: ""})
     end
 
@@ -125,7 +127,7 @@ defmodule Maru.Params.MixedTest do
     assert %{a: nil} = T.blank_requires_2(%{"a" => nil})
     assert %{a: ""} = T.blank_requires_2(%{"a" => ""})
 
-    assert_raise RuntimeError, ~r/Params Parse Error: parse/, fn ->
+    assert_raise ParseError, ~r/Parse Parameter a Error/, fn ->
       T.blank_requires_2(%{})
     end
 
@@ -149,7 +151,7 @@ defmodule Maru.Params.MixedTest do
     assert %{x: "x"} = T.rename(%{b: "x"}, keys: :atoms!)
     assert %{y: "y"} = T.rename(%{c: "y"}, keys: :atoms)
 
-    assert_raise ArgumentError, ~r/errors were found at the given arguments/, fn ->
+    assert_raise ArgumentError, fn ->
       T.atoms_keys(%{"do_not_existed_atom" => "z"}, keys: :atoms!)
     end
   end

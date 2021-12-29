@@ -8,6 +8,8 @@ defmodule Maru.Params.Runtime do
             parser_func: nil,
             validate_func: nil
 
+  alias Maru.Params.ParseError
+
   def parse_params(params_runtime, params, options \\ []) do
     parse_params(params_runtime, params, options, %{})
   end
@@ -39,7 +41,7 @@ defmodule Maru.Params.Runtime do
         parse_params(t, params, options, result)
 
       {:error, step, reason} ->
-        raise "Params Parse Error: #{step}, #{reason}"
+        raise Maru.Params.ParseError, attribute: h.name, step: step, reason: reason
 
       {:ok, value} when nested == :map ->
         value = parse_params(h.children, value, options, %{})
@@ -52,8 +54,11 @@ defmodule Maru.Params.Runtime do
       {:ok, value} when nested == :list_of_single ->
         value =
           Enum.map(value, fn
-            {:ok, item} -> item
-            {:error, step, reason} -> raise "Params Parse Error: #{step}, #{reason}"
+            {:ok, item} ->
+              item
+
+            {:error, step, reason} ->
+              raise ParseError, attribute: h.name, step: step, reason: reason
           end)
 
         parse_params(t, params, options, Map.put(result, h.name, value))

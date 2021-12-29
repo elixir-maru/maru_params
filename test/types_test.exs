@@ -1,6 +1,8 @@
 defmodule Maru.Params.TypesTest do
   use ExUnit.Case, async: true
 
+  alias Maru.Params.ParseError
+
   defmodule Ecto.Enum do
     def values(User, :fruit), do: [:apple]
     def dump_values(User, :fruit), do: ["apple"]
@@ -81,11 +83,11 @@ defmodule Maru.Params.TypesTest do
   test "atom" do
     assert %{fruit: :apple, role: :role1} = T.atom(%{"role" => "role1", "fruit" => "apple"})
 
-    assert_raise ArgumentError, ~r/errors were found at the given arguments/, fn ->
+    assert_raise ParseError, ~r/Parse Parameter role Error/, fn ->
       T.atom(%{"role" => "role3"})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter role Error/, fn ->
       T.atom(%{"role" => "apple"})
     end
   end
@@ -93,7 +95,7 @@ defmodule Maru.Params.TypesTest do
   test "base64" do
     assert %{d2: "foob"} = T.base64(%{"d2" => "Zm9vYg"})
 
-    assert_raise RuntimeError, ~r/Params Parse Error/, fn ->
+    assert_raise ParseError, ~r/Parse Parameter d1 Error/, fn ->
       T.base64(%{"d1" => "Zm9vYg"})
     end
   end
@@ -132,7 +134,7 @@ defmodule Maru.Params.TypesTest do
     assert %{d12: ~N[2015-05-25 13:26:08]} = T.datetime(%{"d12" => ~U[2015-05-25 13:26:08Z]})
     assert %{d12: ~N[2015-05-25 13:26:08]} = T.datetime(%{"d12" => ~N[2015-05-25 13:26:08]})
 
-    assert_raise RuntimeError, ~r/Params Parse Error: parse/, fn ->
+    assert_raise ParseError, ~r/Parse Parameter d11 Error/, fn ->
       T.datetime(%{"d11" => ~N[2015-05-25 13:26:08Z]})
     end
   end
@@ -142,11 +144,11 @@ defmodule Maru.Params.TypesTest do
     assert %{pi1: 3.14, pi2: ^d} = T.float(%{"pi1" => 3.14, "pi2" => 3.14})
     assert %{pi1: 3.14, pi2: ^d} = T.float(%{"pi1" => "3.14x", "pi2" => "3.14"})
 
-    assert_raise RuntimeError, ~r/Params Parse Error/, fn ->
+    assert_raise ParseError, ~r/Parse Parameter pi1 Error/, fn ->
       T.float(%{"pi1" => "x.xx"})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error/, fn ->
+    assert_raise ParseError, ~r/Parse Parameter pi2 Error/, fn ->
       T.float(%{"pi2" => "3.x"})
     end
   end
@@ -155,19 +157,19 @@ defmodule Maru.Params.TypesTest do
     assert %{i1: 314, i2: 3, i3: -1, i4: 6} =
              T.integer(%{"i1" => 314, "i2" => "3", "i3" => "-1", "i4" => '6'})
 
-    assert_raise RuntimeError, ~r/Params Parse Error: validate/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter i2 Error/, fn ->
       T.integer(%{"i2" => 0})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error: validate/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter i3 Error/, fn ->
       T.integer(%{"i3" => 111})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error: validate/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter i4 Error/, fn ->
       T.integer(%{"i4" => 0})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error: validate/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter i4 Error/, fn ->
       T.integer(%{"i4" => 1000})
     end
   end
@@ -200,15 +202,15 @@ defmodule Maru.Params.TypesTest do
                "l6" => [1, 2]
              })
 
-    assert_raise RuntimeError, ~r/Params Parse Error: validate/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter l4 Error/, fn ->
       T.list(%{"l4" => ["1", "2", "3"]})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error: validate/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter l5 Error/, fn ->
       T.list(%{"l5" => ["1"]})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error: validate/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter l6 Error/, fn ->
       T.list(%{"l6" => ["12"]})
     end
   end
@@ -233,11 +235,11 @@ defmodule Maru.Params.TypesTest do
                "s7" => "x"
              })
 
-    assert_raise RuntimeError, ~r/Params Parse Error: validate/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter s6 Error/, fn ->
       T.string(%{"s6" => "12313212"})
     end
 
-    assert_raise RuntimeError, ~r/Params Parse Error: validate/, fn ->
+    assert_raise ParseError, ~r/Validate Parameter s7 Error/, fn ->
       T.string(%{"s7" => "12313212"})
     end
   end
