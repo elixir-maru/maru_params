@@ -37,11 +37,15 @@ defmodule Maru.Params.Types.Atom do
     ArgumentError -> {:error, :parse, "not an already existing atom"}
   end
 
-  def validate(parsed, values: values) do
+  def validate(parsed, values: [h | _] = values) when is_atom(h) do
     if parsed in values do
       {:ok, parsed}
     else
       {:error, :validate, "allowed values: #{Enum.join(values, ", ")}"}
     end
+  end
+
+  def validate(parsed, values: _values) do
+    {:ok, parsed}
   end
 end

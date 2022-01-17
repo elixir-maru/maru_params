@@ -50,11 +50,15 @@ defmodule Maru.Params.Types.String do
     end
   end
 
-  def validate(parsed, values: values) do
+  def validate(parsed, values: [h | _] = values) when is_binary(h) do
     if parsed in values do
       {:ok, parsed}
     else
-      {:error, :validate, "allowed values: #{values}"}
+      {:error, :validate, "allowed values: #{inspect(values)}"}
     end
+  end
+
+  def validate(parsed, values: _values) do
+    {:ok, parsed}
   end
 end

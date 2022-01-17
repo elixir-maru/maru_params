@@ -48,6 +48,7 @@ defmodule Maru.Params.CustomTypeTest do
     assert_raise TypeError, fn ->
       defmodule T2 do
         use Maru.Params.TestHelper
+
         params :test do
           optional :a, UndefinedCustomType
         end

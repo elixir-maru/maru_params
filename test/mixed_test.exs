@@ -27,6 +27,8 @@ defmodule Maru.Params.MixedTest do
       requires :p4, Json |> List[Integer]
       requires :p5, Base64 |> Json |> List[Integer]
       requires :p6, List[Base64 |> Integer]
+      requires :p7, String |> Atom, style: :downcase, values: [:a, :b]
+      requires :p8, Atom |> String, style: :upcase, values: ["A", "B"]
     end
 
     params :blank_optional do
@@ -84,14 +86,25 @@ defmodule Maru.Params.MixedTest do
   end
 
   test "pipeline" do
-    assert %{p1: "11", p2: 11, p3: ["1", "2", "3"], p4: [1, 2, 3], p5: [1, 2, 3], p6: [11, 11]} =
+    assert %{
+             p1: "11",
+             p2: 11,
+             p3: ["1", "2", "3"],
+             p4: [1, 2, 3],
+             p5: [1, 2, 3],
+             p6: [11, 11],
+             p7: :a,
+             p8: "B"
+           } =
              T.pipeline(%{
                "p1" => "MTE=",
                "p2" => "MTE=",
                "p3" => ~s|["1", "2", "3"]|,
                "p4" => ~s|["1", "2", "3"]|,
                "p5" => "WyIxIiwgIjIiLCAiMyJd",
-               "p6" => ["MTE=", "MTE="]
+               "p6" => ["MTE=", "MTE="],
+               "p7" => "A",
+               "p8" => :b
              })
   end
 
