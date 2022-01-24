@@ -42,11 +42,20 @@ defmodule Maru.Params.Types.String do
     _ -> {:error, :parse, "error parsing string"}
   end
 
+  def validate(parsed, regex: regex_alias) when is_atom(regex_alias) do
+    :maru_params
+    |> Application.get_env(:regex_aliases, [])
+    |> Keyword.get(regex_alias)
+    |> case do
+      nil -> {:error, :parse, "undefined regex alias: #{regex_alias}"}
+      regex -> validate(parsed, regex: regex)
+    end
+  end
+
   def validate(parsed, regex: regex) do
-    if Regex.match?(regex, parsed) do
-      {:ok, parsed}
-    else
-      {:error, :validate, "regex check error"}
+    case Regex.match?(regex, parsed) do
+      true -> {:ok, parsed}
+      false -> {:error, :validate, "regex check error"}
     end
   end
 

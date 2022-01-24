@@ -49,9 +49,7 @@ defmodule Maru.Params.Types.DateTime do
       {:ok, %DateTime{} = datetime, _} -> {:ok, datetime}
       {:ok, %DateTime{} = datetime} when naive -> {:ok, DateTime.to_naive(datetime)}
       {:ok, %DateTime{} = datetime} -> {:ok, datetime}
-      {:ok, %NaiveDateTime{}, _} when not naive -> {:error, "unknown naive timezone"}
       {:ok, %NaiveDateTime{}} when not naive -> {:error, "unknown naive timezone"}
-      {:ok, %NaiveDateTime{} = datetime, _} -> {:ok, datetime}
       {:ok, %NaiveDateTime{} = datetime} -> {:ok, datetime}
       {:error, reason} -> {:error, reason}
     end
