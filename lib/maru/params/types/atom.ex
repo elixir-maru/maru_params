@@ -19,7 +19,7 @@ defmodule Maru.Params.Types.Atom do
 
   def parse(input, _) when is_atom(input), do: {:ok, input}
 
-  def parse(input, ecto_enum: {model, field}) do
+  def parse(input, %{ecto_enum: {model, field}}) do
     values = apply(Ecto.Enum, :dump_values, [model, field])
 
     if input in values do

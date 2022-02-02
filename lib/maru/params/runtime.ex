@@ -5,8 +5,7 @@ defmodule Maru.Params.Runtime do
             nested: nil,
             children: [],
             blank_func: nil,
-            parser_func: nil,
-            validate_func: nil
+            parser_func: nil
 
   alias Maru.Params.ParseError
 

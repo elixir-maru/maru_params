@@ -1,19 +1,23 @@
+defmodule Ecto.Enum do
+  def values(User, :fruit), do: [:apple]
+  def values(Nested.User2, :fruit), do: [:apple]
+  def dump_values(User, :fruit), do: ["apple"]
+  def dump_values(Nested.User2, :fruit), do: ["apple"]
+end
+
 defmodule Maru.Params.TypesTest do
   use ExUnit.Case, async: true
 
   alias Maru.Params.ParseError
 
-  defmodule Ecto.Enum do
-    def values(User, :fruit), do: [:apple]
-    def dump_values(User, :fruit), do: ["apple"]
-  end
-
   defmodule T do
+    alias Nested.User2
     use Maru.Params.TestHelper
 
     params :atom do
       optional :role, Atom, values: [:role1, :role2]
       optional :fruit, Atom, ecto_enum: {User, :fruit}
+      optional :fruit2, Atom, ecto_enum: {User2, :fruit}
     end
 
     params :base64 do
@@ -84,12 +88,18 @@ defmodule Maru.Params.TypesTest do
   test "atom" do
     assert %{fruit: :apple, role: :role1} = T.atom(%{"role" => "role1", "fruit" => "apple"})
 
+    assert %{fruit2: :apple, role: :role1} = T.atom(%{"role" => "role1", "fruit2" => "apple"})
+
     assert_raise ParseError, ~r/Parse Parameter role Error/, fn ->
       T.atom(%{"role" => "role3"})
     end
 
     assert_raise ParseError, ~r/Validate Parameter role Error/, fn ->
       T.atom(%{"role" => "apple"})
+    end
+
+    assert_raise ParseError, ~r/Validate Parameter fruit Error/, fn ->
+      T.atom(%{"fruit" => "hehe"})
     end
   end
 
