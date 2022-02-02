@@ -6,7 +6,7 @@
 ```elixir
 def deps do
   [
-    {:maru_params, "~> 0.1"},
+    {:maru_params, "~> 0.2"},
 
     # Optional dependency, you can also add your own json_library dependency
     # and config with `config :maru_params, json_library, YOUR_JSON_LIBRARY`.
