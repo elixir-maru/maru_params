@@ -73,6 +73,10 @@ defmodule Maru.Params.TypesTest do
       optional :l6, List[String], length_range: 2..4
     end
 
+    params :map do
+      optional :m1, Map
+    end
+
     params :string do
       optional :s1, String
       optional :s2, String, style: :upcase
@@ -224,6 +228,10 @@ defmodule Maru.Params.TypesTest do
     assert_raise ParseError, ~r/Validate Parameter l6 Error/, fn ->
       T.list(%{"l6" => ["12"]})
     end
+  end
+
+  test "map" do
+    assert %{m1: %{"key" => "value"}} = T.map(%{"m1" => %{"key" => "value"}})
   end
 
   test "string" do

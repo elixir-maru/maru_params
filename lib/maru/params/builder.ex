@@ -119,12 +119,13 @@ defmodule Maru.Params.Builder do
 
   defp do_build_param(:type, %{args: args, info: info, runtime: runtime}) do
     parsers = args |> Map.get(:__type__) |> do_build_type()
+    with_children? = args |> Map.get(:children) |> length() > 0
 
     nested =
       parsers
       |> List.last()
       |> case do
-        {:module, Maru.Params.Types.Map} -> :map
+        {:module, Maru.Params.Types.Map} when with_children? -> :map
         {:module, Maru.Params.Types.List} -> :list_of_map
         {:list, _} -> :list_of_single
         _ -> nil
