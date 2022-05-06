@@ -29,6 +29,7 @@ defmodule Maru.Params.MixedTest do
       requires :p6, List[Base64 |> Integer]
       requires :p7, String |> Atom, style: :downcase, values: [:a, :b]
       requires :p8, Atom |> String, style: :upcase, values: ["A", "B"]
+      requires :p9, Json |> List[Atom], values: [:a, :b]
     end
 
     params :blank_optional do
@@ -68,6 +69,10 @@ defmodule Maru.Params.MixedTest do
     params :atoms_keys do
       optional :z, String, source: "do_not_existed_atom"
     end
+
+    params :function do
+      optional :fun, (&{:ok, String.split(&1, ",", trim: true)}) |> List[Atom], values: [:a, :c]
+    end
   end
 
   test "atom" do
@@ -94,7 +99,8 @@ defmodule Maru.Params.MixedTest do
              p5: [1, 2, 3],
              p6: [11, 11],
              p7: :a,
-             p8: "B"
+             p8: "B",
+             p9: [:b, :a]
            } =
              T.pipeline(%{
                "p1" => "MTE=",
@@ -104,7 +110,8 @@ defmodule Maru.Params.MixedTest do
                "p5" => "WyIxIiwgIjIiLCAiMyJd",
                "p6" => ["MTE=", "MTE="],
                "p7" => "A",
-               "p8" => :b
+               "p8" => :b,
+               "p9" => ~s|["b", "a"]|
              })
   end
 
@@ -167,5 +174,9 @@ defmodule Maru.Params.MixedTest do
     assert_raise ArgumentError, fn ->
       T.atoms_keys(%{"do_not_existed_atom" => "z"}, keys: :atoms!)
     end
+  end
+
+  test "function key" do
+    assert %{fun: [:c, :a]} = T.function(%{"fun" => "c,a"})
   end
 end
