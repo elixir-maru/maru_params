@@ -3,6 +3,9 @@ defmodule Maru.Params.Types.List do
   Buildin Type: List
 
   ## Parser Arguments
+      * `:unique` - whether unique the data in list with `Enum.uniq`
+        * `true` - unique the list
+        * `false` (default) - do NOT unique the list
       * `:string_strategy` - how to parse a string value
         * `:codepoints` (default) - decode by `String.codepoints/1`
         * `:charlist` - decode by `String.to_charlist/1`
@@ -19,19 +22,27 @@ defmodule Maru.Params.Types.List do
 
   use Maru.Params.Type
 
-  def parser_arguments, do: [:string_strategy]
+  def parser_arguments, do: [:string_strategy, :unique]
 
   def validator_arguments, do: [:min_length, :max_length, :length_range]
 
-  def parse(input, _) when is_list(input), do: {:ok, input}
+  def parse(input, args) when is_list(input) do
+    args
+    |> Map.get(:unique, false)
+    |> case do
+      true -> {:ok, Enum.uniq(input)}
+      false -> {:ok, input}
+    end
+  end
 
   def parse(input, args) when is_binary(input) do
     args
     |> Map.get(:string_strategy, :codepoints)
     |> case do
-      :codepoints -> {:ok, String.codepoints(input)}
-      :charlist -> {:ok, String.to_charlist(input)}
+      :codepoints -> String.codepoints(input)
+      :charlist -> String.to_charlist(input)
     end
+    |> parse(args)
   end
 
   def parse(input, _) do
