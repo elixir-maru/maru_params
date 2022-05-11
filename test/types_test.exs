@@ -5,6 +5,10 @@ defmodule Ecto.Enum do
   def dump_values(Nested.User2, :fruit), do: ["apple"]
 end
 
+defmodule Maru.Params.OptionTest do
+  def values(role), do: [values: [:foo, role]]
+end
+
 defmodule Maru.Params.TypesTest do
   use ExUnit.Case, async: true
 
@@ -16,6 +20,7 @@ defmodule Maru.Params.TypesTest do
 
     params :atom do
       optional :role, Atom, values: [:role1, :role2]
+      optional :name, Atom, Maru.Params.OptionTest.values(:bar)
       optional :fruit, Atom, ecto_enum: {User, :fruit}
       optional :fruit2, Atom, ecto_enum: {User2, :fruit}
     end
@@ -94,6 +99,10 @@ defmodule Maru.Params.TypesTest do
     assert %{fruit: :apple, role: :role1} = T.atom(%{"role" => "role1", "fruit" => "apple"})
 
     assert %{fruit2: :apple, role: :role1} = T.atom(%{"role" => "role1", "fruit2" => "apple"})
+
+    assert %{name: :foo} = T.atom(%{"name" => "foo"})
+
+    assert %{name: :bar} = T.atom(%{"name" => :bar})
 
     assert_raise ParseError, ~r/Parse Parameter role Error/, fn ->
       T.atom(%{"role" => "role3"})

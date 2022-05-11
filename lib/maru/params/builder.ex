@@ -53,15 +53,20 @@ defmodule Maru.Params.Builder do
 
     defmacro unquote(method)(name, type, options) do
       type = expand_alias(type, __CALLER__)
-      options = options |> expand_alias(__CALLER__) |> Map.new()
 
-      args =
-        %{__name__: name, __type__: type, __required__: unquote(required)}
-        |> Map.merge(options)
-        |> Macro.escape()
+      options =
+        case options do
+          [_ | _] -> options |> expand_alias(__CALLER__) |> Macro.escape()
+          {{:., _, _}, _, _} -> options
+        end
+
+      args = Macro.escape(%{__name__: name, __type__: type, __required__: unquote(required)})
 
       quote do
-        unquote(args) |> build_param() |> push_param(__ENV__)
+        unquote(args)
+        |> Map.merge(Map.new(unquote(options)))
+        |> build_param()
+        |> push_param(__ENV__)
       end
     end
 
