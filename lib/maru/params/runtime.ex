@@ -32,7 +32,7 @@ defmodule Maru.Params.Runtime do
       if value in [nil, "", '', %{}] do
         h.blank_func.({value, passed?})
       else
-        h.parser_func.({:ok, value})
+        h.parser_func.({:ok, value}, options)
       end
 
     case parsed do

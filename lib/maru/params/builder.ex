@@ -110,7 +110,7 @@ defmodule Maru.Params.Builder do
 
   defp do_build_param(:name, %{args: args, info: info, runtime: runtime}) do
     name = Map.fetch!(args, :__name__)
-    source = Map.get(args, :source, to_string(name))
+    source = Map.get(args, :source, name)
 
     %{
       args: args,
@@ -227,6 +227,7 @@ defmodule Maru.Params.Builder do
 
   def do_build_parser(parsers, args) do
     value = quote do: value
+    options = quote do: options
 
     block =
       Enum.reduce(parsers, value, fn
@@ -238,7 +239,7 @@ defmodule Maru.Params.Builder do
               {:ok, value} ->
                 value
                 |> Enum.map(fn item -> {:ok, item} end)
-                |> Enum.map(unquote(nested_ast))
+                |> Enum.map(fn ok_item -> unquote(nested_ast).(ok_item, unquote(options)) end)
                 |> then(fn value -> {:ok, value} end)
 
               error ->
@@ -268,17 +269,26 @@ defmodule Maru.Params.Builder do
           quote do
             case unquote(ast) do
               {:ok, value} ->
-                Enum.reduce(
-                  unquote(validator_args),
-                  unquote(module).parse(unquote(ast), unquote(parser_args)),
-                  fn
-                    validator_arg, {:ok, parsed} ->
-                      unquote(module).validate(parsed, validator_arg)
+                options =
+                  unquote(parser_args)
+                  |> Map.get(:options, [])
+                  |> Keyword.merge(unquote(options))
 
-                    _validator_arg, error ->
-                      error
-                  end
-                )
+                args =
+                  Enum.reduce(
+                    unquote(validator_args),
+                    unquote(module).parse(
+                      unquote(ast),
+                      Map.put(unquote(parser_args), :options, options)
+                    ),
+                    fn
+                      validator_arg, {:ok, parsed} ->
+                        unquote(module).validate(parsed, validator_arg)
+
+                      _validator_arg, error ->
+                        error
+                    end
+                  )
 
               error ->
                 error
@@ -287,7 +297,9 @@ defmodule Maru.Params.Builder do
       end)
 
     quote do
-      fn unquote(value) -> unquote(block) end
+      fn unquote(value), unquote(options) ->
+        unquote(block)
+      end
     end
   end
 

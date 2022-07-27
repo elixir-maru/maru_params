@@ -40,6 +40,13 @@ defmodule Maru.Params.CustomTypeTest do
              })
   end
 
+  test "custom type atom key" do
+    assert %{a: %Test.CustomTypeA{id: 1, name: "2"}} =
+             T.custom_type(%{a: %{id: "1", name: 2}}, keys: :atoms!)
+
+    assert %{b: %{id: 1, name: "2"}} = T.custom_type(%{b: %{id: 1, name: 2}}, keys: :atoms!)
+  end
+
   test "derive" do
     assert {:ok, ~s|{"id":1,"name":"11"}|} = Jason.encode(%Test.CustomTypeA{id: 1, name: "11"})
   end
