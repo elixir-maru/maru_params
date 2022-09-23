@@ -88,7 +88,7 @@ defmodule Maru.Params.TypesTest do
       optional :s2, String, style: :upcase
       optional :s3, String, style: :downcase
       optional :s4, String, style: :camelcase
-      optional :s5, String, style: :snakecase
+      optional :s5, String, style: :snakecase, trim: " "
       optional :s6, String, regex: ~r/^\d{1,3}$/
       optional :s7, String, values: ["x", "y"]
       optional :s8, String, regex: :uuid
@@ -251,7 +251,7 @@ defmodule Maru.Params.TypesTest do
              s1: "ALO_ha",
              s2: "ALO_HA",
              s3: "alo_ha",
-             s4: "ALOHa",
+             s4: "ALOHa ",
              s5: "alo_ha",
              s6: "34",
              s7: "x",
@@ -261,8 +261,8 @@ defmodule Maru.Params.TypesTest do
                "s1" => "ALO_ha",
                "s2" => "ALO_ha",
                "s3" => "ALO_ha",
-               "s4" => "ALO_ha",
-               "s5" => "ALO_ha",
+               "s4" => "ALO_ha ",
+               "s5" => "  ALO_ha ",
                "s6" => "34",
                "s7" => "x",
                "s8" => "bf4be93a-7d5b-11ec-90d6-0242ac120003"

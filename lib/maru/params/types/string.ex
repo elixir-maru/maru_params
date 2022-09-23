@@ -8,6 +8,7 @@ defmodule Maru.Params.Types.String do
         * `:downcase`
         * `:camelcase`
         * `:snakecase`
+      * `:trim` - to_trim
 
   ## Validator Arguments
       * `:regex` - validate input by regex
@@ -21,12 +22,20 @@ defmodule Maru.Params.Types.String do
 
   use Maru.Params.Type
 
-  def parser_arguments, do: [:style]
+  def parser_arguments, do: [:style, :trim]
 
   def validator_arguments, do: [:regex, :values]
 
   def parse(input, args) do
     input = to_string(input)
+
+    input =
+      args
+      |> Map.get(:trim)
+      |> case do
+        nil -> input
+        to_trim -> String.trim(input, to_trim)
+      end
 
     args
     |> Map.get(:style)

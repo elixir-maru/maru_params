@@ -125,7 +125,7 @@ config :maru_params, :regex_aliases, [
 
 optional :code, String, style: :upcase
 optional :code, String, style: :downcase
-optional :code, String, style: :camelcase
+optional :code, String, style: :camelcase, trim: " "
 optional :code, String, style: :snakecase
 optional :id, String, regex: ~r/^\d{7,10}$/
 optional :uuid, String, regex: :uuid
