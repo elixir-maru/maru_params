@@ -33,7 +33,7 @@ defmodule MaruParams.MixProject do
       {:decimal, "~> 1.0 or ~> 2.0", optional: true},
       {:plug, "~> 1.10", optional: true},
       {:jason, "~> 1.0", optional: true},
-      {:ex_doc, "~> 0.26", only: :docs}
+      {:ex_doc, "~> 0.29", only: :docs}
     ]
   end
 
