@@ -217,3 +217,44 @@ optional :a, String, source: :b
 
 %{"b" => "1"} -> %{a: "1"}
 ```
+
+## Evaluate Given
+
+### only check params when another parameter is given
+
+```elixir
+optional :existed, Boolean
+
+given :existed do
+  requires :meta do
+    requires :a, String
+    requires :b, String
+    requires :c, String
+  end
+end
+```
+
+### only check params when other params have specific values
+
+```elixir
+optional :a, String
+optional :b, String
+
+given a: "A", b: "B" do
+  requires :c, Integer
+end
+
+given a: "AA", b: "BB" do
+  requires :c, String
+end
+```
+
+### only check params when the particular condition is met
+
+```elixir
+requires :age, Integer
+
+given fn %{age: age} -> age < 18 end do
+  requires :id, String
+end
+```

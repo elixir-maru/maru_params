@@ -73,6 +73,48 @@ defmodule Maru.Params.MixedTest do
     params :function do
       optional :fun, (&{:ok, String.split(&1, ",", trim: true)}) |> List[Atom], values: [:a, :c]
     end
+
+    params :given_1 do
+      optional :existed, Boolean
+
+      given :existed do
+        optional :meta do
+          requires :a, String
+        end
+      end
+    end
+
+    params :given_2 do
+      optional :style, Atom, values: [:foo, :bar]
+
+      given style: :foo do
+        optional :meta do
+          requires :foo_str, String
+        end
+      end
+
+      given style: :bar do
+        optional :meta do
+          requires :bar_str, String
+        end
+      end
+    end
+
+    params :given_3 do
+      optional :style, Atom, values: [:foo, :bar]
+
+      given &match?(%{style: :foo}, &1) do
+        optional :meta do
+          requires :foo_str, String
+        end
+      end
+
+      given fn result -> Map.get(result, :style) == :bar end do
+        optional :meta do
+          requires :bar_str, String
+        end
+      end
+    end
   end
 
   test "atom" do
@@ -178,5 +220,57 @@ defmodule Maru.Params.MixedTest do
 
   test "function key" do
     assert %{fun: [:c, :a]} = T.function(%{"fun" => "c,a"})
+  end
+
+  test "given with existed condition" do
+    assert %{existed: true, meta: %{a: "AA"}} =
+             T.given_1(%{
+               "existed" => "true",
+               "meta" => %{
+                 "a" => "AA"
+               }
+             })
+
+    assert %{} = T.given_1(%{})
+  end
+
+  test "given with value condition" do
+    assert %{} = T.given_2(%{})
+
+    assert %{meta: %{foo_str: "foo"}, style: :foo} =
+             T.given_2(%{
+               "style" => "foo",
+               "meta" => %{
+                 "foo_str" => "foo"
+               }
+             })
+
+    assert %{meta: %{bar_str: "bar"}, style: :bar} =
+             T.given_2(%{
+               "style" => "bar",
+               "meta" => %{
+                 "bar_str" => "bar"
+               }
+             })
+  end
+
+  test "given with function condition" do
+    assert %{} = T.given_2(%{})
+
+    assert %{meta: %{foo_str: "foo"}, style: :foo} =
+             T.given_3(%{
+               "style" => "foo",
+               "meta" => %{
+                 "foo_str" => "foo"
+               }
+             })
+
+    assert %{meta: %{bar_str: "bar"}, style: :bar} =
+             T.given_3(%{
+               "style" => "bar",
+               "meta" => %{
+                 "bar_str" => "bar"
+               }
+             })
   end
 end

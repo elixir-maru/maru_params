@@ -4,6 +4,7 @@ defmodule Maru.Params.Runtime do
             source: nil,
             nested: nil,
             children: [],
+            ignore_func: nil,
             blank_func: nil,
             parser_func: nil
 
@@ -16,6 +17,10 @@ defmodule Maru.Params.Runtime do
   def parse_params([], _params, _options, result), do: result
 
   def parse_params([h | t], params, options, result) do
+    if h.ignore_func.(result) do
+      throw(:ignore)
+    end
+
     source =
       case Keyword.get(options, :keys, :strings) do
         :strings -> to_string(h.source)
@@ -65,5 +70,7 @@ defmodule Maru.Params.Runtime do
       {:ok, value} when nested == nil ->
         parse_params(t, params, options, Map.put(result, h.name, value))
     end
+  catch
+    :ignore -> parse_params(t, params, options, result)
   end
 end
