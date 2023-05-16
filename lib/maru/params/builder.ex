@@ -215,7 +215,7 @@ defmodule Maru.Params.Builder do
       |> case do
         {false, true} -> {:error, :parse, "required #{name}"}
         {false, false} -> :ignore
-        {true, _} -> {:ok, args[:default]}
+        {true, _} -> {:default, args[:default]}
       end
       |> Macro.escape()
 

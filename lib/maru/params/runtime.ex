@@ -47,6 +47,9 @@ defmodule Maru.Params.Runtime do
       {:error, step, reason} ->
         raise Maru.Params.ParseError, attribute: h.name, step: step, reason: reason
 
+      {:default, value} ->
+        parse_params(t, params, options, Map.put(result, h.name, value))
+
       {:ok, value} when nested == :map ->
         value = parse_params(h.children, value, options, %{})
         parse_params(t, params, options, Map.put(result, h.name, value))

@@ -60,6 +60,7 @@ defmodule Maru.Params.TypesTest do
       optional :i2, Integer, min: 1
       optional :i3, Integer, max: 11
       optional :i4, Integer, range: 5..10
+      optional :i5, Integer, default: 0
     end
 
     params :json do
@@ -77,6 +78,7 @@ defmodule Maru.Params.TypesTest do
       optional :l5, List[String], min_length: 2
       optional :l6, List[String], length_range: 2..4
       optional :l7, List[Integer], unique: true
+      optional :l8, List[Integer], default: [0, 0, 0, 0]
     end
 
     params :map do
@@ -179,7 +181,7 @@ defmodule Maru.Params.TypesTest do
   end
 
   test "integer" do
-    assert %{i1: 314, i2: 3, i3: -1, i4: 6} =
+    assert %{i1: 314, i2: 3, i3: -1, i4: 6, i5: 0} =
              T.integer(%{"i1" => 314, "i2" => "3", "i3" => "-1", "i4" => '6'})
 
     assert_raise ParseError, ~r/Validate Parameter i2 Error/, fn ->
@@ -217,7 +219,8 @@ defmodule Maru.Params.TypesTest do
              l4: ["1", "2"],
              l5: ["1", "2"],
              l6: ["1", "2"],
-             l7: [1]
+             l7: [1],
+             l8: [0, 0, 0, 0]
            } =
              T.list(%{
                "l1" => ["1"],
@@ -226,7 +229,8 @@ defmodule Maru.Params.TypesTest do
                "l4" => [1, 2],
                "l5" => [1, 2],
                "l6" => [1, 2],
-               "l7" => ["1", "1"]
+               "l7" => ["1", "1"],
+               "l8" => []
              })
 
     assert_raise ParseError, ~r/Validate Parameter l4 Error/, fn ->
