@@ -79,6 +79,7 @@ defmodule Maru.Params.TypesTest do
       optional :l6, List[String], length_range: 2..4
       optional :l7, List[Integer], unique: true
       optional :l8, List[Integer], default: [0, 0, 0, 0]
+      optional :l9, List[String], string_strategy: :wrap
     end
 
     params :map do
@@ -220,7 +221,8 @@ defmodule Maru.Params.TypesTest do
              l5: ["1", "2"],
              l6: ["1", "2"],
              l7: [1],
-             l8: [0, 0, 0, 0]
+             l8: [0, 0, 0, 0],
+             l9: ["123"]
            } =
              T.list(%{
                "l1" => ["1"],
@@ -230,7 +232,8 @@ defmodule Maru.Params.TypesTest do
                "l5" => [1, 2],
                "l6" => [1, 2],
                "l7" => ["1", "1"],
-               "l8" => []
+               "l8" => [],
+               "l9" => "123"
              })
 
     assert_raise ParseError, ~r/Validate Parameter l4 Error/, fn ->

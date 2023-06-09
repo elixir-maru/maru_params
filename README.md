@@ -105,6 +105,7 @@ end
 ```elixir
 requires :str, List, string_strategy: :codepoints
 requires :chars, List, string_strategy: :charlist
+requires :wrap, List, string_strategy: :wrap
 requires :tags, List[String], default: ["N/A"]
 requires :tags, List[String], max_length: 3
 requires :tags, List[String], min_length: 1

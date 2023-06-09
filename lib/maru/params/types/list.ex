@@ -9,6 +9,7 @@ defmodule Maru.Params.Types.List do
       * `:string_strategy` - how to parse a string value
         * `:codepoints` (default) - decode by `String.codepoints/1`
         * `:charlist` - decode by `String.to_charlist/1`
+        * `:wrap` - decode by `List.wrap/1`
 
   ## Validator Arguments
       * `:max_length` - max length of the list
@@ -41,6 +42,7 @@ defmodule Maru.Params.Types.List do
     |> case do
       :codepoints -> String.codepoints(input)
       :charlist -> String.to_charlist(input)
+      :wrap -> List.wrap(input)
     end
     |> parse(args)
   end
