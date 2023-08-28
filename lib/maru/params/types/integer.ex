@@ -24,7 +24,7 @@ defmodule Maru.Params.Types.Integer do
   end
 
   def parse(input, _) do
-    {:error, :parse, "unknown input format as integer: #{inspect(input)}"}
+    {:error, :parse, "unknown input format, expected Integer, got: #{inspect(input)}"}
   end
 
   def validate(parsed, min: min) do

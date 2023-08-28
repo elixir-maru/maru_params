@@ -10,10 +10,10 @@ defmodule Maru.Params.ParseError do
   defexception [:attribute, :step, :reason]
 
   def message(%{step: :parse} = e) do
-    "Parse Parameter #{e.attribute} Error: #{e.reason}"
+    "Error Parsing Parameter `#{e.attribute}`: #{e.reason}"
   end
 
   def message(%{step: :validate} = e) do
-    "Validate Parameter #{e.attribute} Error: #{e.reason}"
+    "Error Validating Parameter `#{e.attribute}`: #{e.reason}"
   end
 end

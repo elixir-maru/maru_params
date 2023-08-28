@@ -48,7 +48,7 @@ defmodule Maru.Params.Types.List do
   end
 
   def parse(input, _) do
-    {:error, :parse, "unknown input format as list: #{inspect(input)}"}
+    {:error, :parse, "unknown input format, expected List, got: #{inspect(input)}"}
   end
 
   def validate(parsed, min_length: min_length) do

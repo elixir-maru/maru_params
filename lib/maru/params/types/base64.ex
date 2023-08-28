@@ -18,7 +18,7 @@ defmodule Maru.Params.Types.Base64 do
 
     case Base.decode64(input, options) do
       {:ok, data} -> {:ok, data}
-      :error -> {:error, :parse, "error to parse base64"}
+      :error -> {:error, :parse, "error parsing base64"}
     end
   end
 end
