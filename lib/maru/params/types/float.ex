@@ -34,6 +34,6 @@ defmodule Maru.Params.Types.Float do
         {:ok, input |> to_string() |> Decimal.new()}
     end
   rescue
-    _ -> {:error, :parse, "unknown format as float: #{inspect(input)}"}
+    _ -> {:error, :parse, "unknown format, expected Float, got: #{inspect(input)}"}
   end
 end

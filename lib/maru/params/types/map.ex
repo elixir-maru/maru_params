@@ -8,6 +8,6 @@ defmodule Maru.Params.Types.Map do
   def parse(input, _) when is_map(input), do: {:ok, input}
 
   def parse(input, _) do
-    {:error, :parse, "unknown input format as map: #{inspect(input)}"}
+    {:error, :parse, "unknown input format, expected Map, got: #{inspect(input)}"}
   end
 end

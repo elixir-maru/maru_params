@@ -173,15 +173,15 @@ defmodule Maru.Params.MixedTest do
   test "blank requires" do
     assert %{a: "a"} = T.blank_requires_1(%{"a" => "a"})
 
-    assert_raise ParseError, ~r/Parse Parameter a Error/, fn ->
+    assert_raise ParseError, ~r/Error Parsing Parameter `a`/, fn ->
       T.blank_requires_1(%{})
     end
 
-    assert_raise ParseError, ~r/Parse Parameter a Error/, fn ->
+    assert_raise ParseError, ~r/Error Parsing Parameter `a`/, fn ->
       T.blank_requires_1(%{a: nil})
     end
 
-    assert_raise ParseError, ~r/Parse Parameter a Error/, fn ->
+    assert_raise ParseError, ~r/Error Parsing Parameter `a`/, fn ->
       T.blank_requires_1(%{a: ""})
     end
 
@@ -189,7 +189,7 @@ defmodule Maru.Params.MixedTest do
     assert %{a: nil} = T.blank_requires_2(%{"a" => nil})
     assert %{a: ""} = T.blank_requires_2(%{"a" => ""})
 
-    assert_raise ParseError, ~r/Parse Parameter a Error/, fn ->
+    assert_raise ParseError, ~r/Error Parsing Parameter `a`/, fn ->
       T.blank_requires_2(%{})
     end
 
