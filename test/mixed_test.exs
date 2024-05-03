@@ -17,6 +17,8 @@ defmodule Maru.Params.MixedTest do
           optional :d1, String
           optional :d2, Integer
         end
+
+        optional :list_of_strings, List[String]
       end
     end
 
@@ -121,15 +123,25 @@ defmodule Maru.Params.MixedTest do
     assert %{
              map: %{
                m1: %{d1: "d1", d2: 22},
-               m2: [%{d1: "d1", d2: 22}, %{d1: "dx", d2: 222}]
+               m2: [%{d1: "d1", d2: 22}, %{d1: "dx", d2: 222}],
+               list_of_strings: ["1", "2", "3"]
              }
            } =
              T.nested(%{
                "map" => %{
                  "m1" => %{"d1" => "d1", "d2" => 22},
-                 "m2" => [%{"d1" => "d1", "d2" => 22}, %{"d1" => "dx", "d2" => 222}]
+                 "m2" => [%{"d1" => "d1", "d2" => 22}, %{"d1" => "dx", "d2" => 222}],
+                 "list_of_strings" => ["1", "2", "3"]
                }
              })
+
+    assert_raise ParseError,
+                 ~r/Error Parsing Parameter `list_of_strings`: expected list, got string:/,
+                 fn ->
+                   T.nested(%{
+                     "map" => %{"list_of_strings" => "bf4be93a-7d5b-11ec-90d6-0242ac120003"}
+                   })
+                 end
   end
 
   test "pipeline" do

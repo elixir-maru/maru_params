@@ -34,7 +34,7 @@ defmodule Maru.Params.Runtime do
     nested = h.nested
 
     parsed =
-      if value in [nil, "", '', %{}] do
+      if value in [nil, "", ~c"", %{}] do
         h.blank_func.({value, passed?})
       else
         h.parser_func.({:ok, value}, options)
