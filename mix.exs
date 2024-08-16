@@ -40,7 +40,7 @@ defmodule MaruParams.MixProject do
   defp package do
     %{
       maintainers: ["Xiangrong Hao"],
-      licenses: ["WTFPL"],
+      licenses: ["Apache 2.0"],
       links: %{"Github" => "https://github.com/elixir-maru/maru_params"}
     }
   end
