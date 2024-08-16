@@ -183,7 +183,7 @@ defmodule Maru.Params.TypesTest do
 
   test "integer" do
     assert %{i1: 314, i2: 3, i3: -1, i4: 6, i5: 0} =
-             T.integer(%{"i1" => 314, "i2" => "3", "i3" => "-1", "i4" => '6'})
+             T.integer(%{"i1" => 314, "i2" => "3", "i3" => "-1", "i4" => ~c"6"})
 
     assert_raise ParseError, ~r/Error Validating Parameter `i2`/, fn ->
       T.integer(%{"i2" => 0})
@@ -216,7 +216,7 @@ defmodule Maru.Params.TypesTest do
     assert %{
              l1: [1],
              l2: [1, 2, 3],
-             l3: '123',
+             l3: ~c"123",
              l4: ["1", "2"],
              l5: ["1", "2"],
              l6: ["1", "2"],
