@@ -5,7 +5,7 @@ defmodule MaruParams.MixProject do
     [
       app: :maru_params,
       version: "0.2.10",
-      elixir: "~> 1.2",
+      elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -40,7 +40,7 @@ defmodule MaruParams.MixProject do
   defp package do
     %{
       maintainers: ["Xiangrong Hao"],
-      licenses: ["WTFPL"],
+      licenses: ["Apache 2.0"],
       links: %{"Github" => "https://github.com/elixir-maru/maru_params"}
     }
   end
