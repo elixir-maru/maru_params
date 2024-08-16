@@ -4,9 +4,9 @@
 [![Module Version](https://img.shields.io/hexpm/v/maru_params.svg)](https://hex.pm/packages/maru_params)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/maru_params/)
 [![Total Download](https://img.shields.io/hexpm/dt/maru_params.svg)](https://hex.pm/packages/maru_params)
-[![License](https://img.shields.io/hexpm/l/maru_params.svg)](https://github.com/falood/maru_params/blob/master/LICENSE)
-[![Last Updated](https://img.shields.io/github/last-commit/falood/maru_params.svg)](https://github.com/falood/maru_params/commits/master)
-[![CI](https://github.com/falood/maru_params/actions/workflows/ci.yml/badge.svg)](https://github.com/falood/maru_params/actions)
+[![License](https://img.shields.io/hexpm/l/maru_params.svg)](https://github.com/elixir-maru/maru_params/blob/master/LICENSE)
+[![Last Updated](https://img.shields.io/github/last-commit/elixir-maru/maru_params.svg)](https://github.com/elixir-maru/maru_params/commits/master)
+[![CI](https://github.com/elixir-maru/maru_params/actions/workflows/ci.yml/badge.svg)](https://github.com/elixir-maru/maru_params/actions)
 
 ## Installation
 
