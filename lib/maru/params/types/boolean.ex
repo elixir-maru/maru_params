@@ -14,5 +14,7 @@ defmodule Maru.Params.Types.Boolean do
   def parse(nil, _), do: {:ok, false}
   def parse(false, _), do: {:ok, false}
   def parse("false", _), do: {:ok, false}
-  def parse(input, _), do: {:error, :parse, "unknown format, expected Boolean, got: #{inspect(input)}"}
+
+  def parse(input, _),
+    do: {:error, :parse, "unknown format, expected Boolean, got: #{inspect(input)}"}
 end
