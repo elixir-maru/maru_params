@@ -25,7 +25,8 @@ defmodule Maru.Params.Types.Atom do
     if input in values do
       {:ok, input |> to_string |> String.to_existing_atom()}
     else
-      {:error, :validate, "allowed values: #{Enum.join(values, ", ")}"}
+      {:error, :validate,
+       "Given input `#{input}` not in allowed values: #{Enum.join(values, ", ")}"}
     end
   rescue
     ArgumentError -> {:error, :parse, "not an already existing atom"}
@@ -41,7 +42,8 @@ defmodule Maru.Params.Types.Atom do
     if parsed in values do
       {:ok, parsed}
     else
-      {:error, :validate, "allowed values: #{Enum.join(values, ", ")}"}
+      {:error, :validate,
+       "Given input `#{parsed}` not in allowed values: #{Enum.join(values, ", ")}"}
     end
   end
 
