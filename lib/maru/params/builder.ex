@@ -338,10 +338,10 @@ defmodule Maru.Params.Builder do
           end
 
         {:module, module}, ast ->
-          parser_args =
-            args
-            |> Map.take(module.parser_arguments())
-            |> Macro.escape()
+          parser_args = Map.take(args, module.parser_arguments())
+          preset_options = Map.get(parser_args, :options, [])
+          parser_args_ast = Macro.escape(parser_args)
+          preset_options_ast = Macro.escape(preset_options)
 
           validator_args =
             args
@@ -351,17 +351,14 @@ defmodule Maru.Params.Builder do
           quote do
             case unquote(ast) do
               {:ok, value} ->
-                options =
-                  unquote(parser_args)
-                  |> Map.get(:options, [])
-                  |> Keyword.merge(unquote(options))
+                options = Keyword.merge(unquote(preset_options_ast), unquote(options))
 
                 args =
                   Enum.reduce(
                     unquote(validator_args),
                     unquote(module).parse(
                       unquote(ast),
-                      Map.put(unquote(parser_args), :options, options)
+                      Map.put(unquote(parser_args_ast), :options, options)
                     ),
                     fn
                       validator_arg, {:ok, parsed} ->
