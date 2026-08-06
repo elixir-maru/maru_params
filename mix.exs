@@ -5,7 +5,7 @@ defmodule MaruParams.MixProject do
     [
       app: :maru_params,
       version: "0.2.13",
-      elixir: "~> 1.12",
+      elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -30,7 +30,7 @@ defmodule MaruParams.MixProject do
 
   defp deps do
     [
-      {:decimal, "~> 1.0 or ~> 2.0", optional: true},
+      {:decimal, "~> 1.0 or ~> 2.0 or ~> 3.0", optional: true},
       {:plug, "~> 1.10", optional: true},
       {:jason, "~> 1.0", optional: true},
       {:ex_doc, "~> 0.29", only: :docs}
