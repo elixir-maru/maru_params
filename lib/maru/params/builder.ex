@@ -357,7 +357,7 @@ defmodule Maru.Params.Builder do
                   Enum.reduce(
                     unquote(validator_args),
                     unquote(module).parse(
-                      unquote(ast),
+                      value,
                       Map.put(unquote(parser_args_ast), :options, options)
                     ),
                     fn
