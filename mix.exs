@@ -5,7 +5,7 @@ defmodule MaruParams.MixProject do
     [
       app: :maru_params,
       version: "0.2.13",
-      elixir: "~> 1.12",
+      elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
