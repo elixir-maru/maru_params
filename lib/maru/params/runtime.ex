@@ -14,9 +14,25 @@ defmodule Maru.Params.Runtime do
     parse_params(params_runtime, params, options, %{})
   end
 
-  def parse_params([], _params, _options, result), do: result
+  def parse_params(params_runtime, params, options, result) do
+    do_parse_params(params_runtime, params, options, result, [])
+  end
 
-  def parse_params([h | t], params, options, result) do
+  @doc """
+  Run `func` and prepend `prefix` (a path segment or a list of them) to the path
+  of the `Maru.Params.ParseError` raised within it, so that the error keeps track
+  of its position within the whole params.
+  """
+  def with_path(prefix, func) do
+    func.()
+  rescue
+    e in ParseError ->
+      reraise %{e | path: List.wrap(prefix) ++ (e.path || [])}, __STACKTRACE__
+  end
+
+  defp do_parse_params([], _params, _options, result, _path), do: result
+
+  defp do_parse_params([h | t], params, options, result, path) do
     if h.ignore_func.(result) do
       throw(:ignore)
     end
@@ -32,48 +48,61 @@ defmodule Maru.Params.Runtime do
     passed? = Map.has_key?(params, source)
     value = Map.get(params, source)
     nested = h.nested
+    current_path = path ++ [h.name]
 
     parsed =
       if value in [nil, "", ~c"", %{}] do
         h.blank_func.({value, passed?})
       else
-        h.parser_func.({:ok, value}, options)
+        with_path(current_path, fn -> h.parser_func.({:ok, value}, options) end)
       end
 
     case parsed do
       :ignore ->
-        parse_params(t, params, options, result)
+        do_parse_params(t, params, options, result, path)
 
       {:error, step, reason} ->
-        raise Maru.Params.ParseError, attribute: h.name, step: step, reason: reason
+        raise ParseError, attribute: h.name, path: current_path, step: step, reason: reason
 
       {:default, value} ->
-        parse_params(t, params, options, Map.put(result, h.name, value))
+        do_parse_params(t, params, options, Map.put(result, h.name, value), path)
 
       {:ok, value} when nested == :map ->
-        value = parse_params(h.children, value, options, %{})
-        parse_params(t, params, options, Map.put(result, h.name, value))
+        value = do_parse_params(h.children, value, options, %{}, current_path)
+        do_parse_params(t, params, options, Map.put(result, h.name, value), path)
 
       {:ok, value} when nested == :list_of_map ->
-        value = Enum.map(value, fn item -> parse_params(h.children, item, options, %{}) end)
-        parse_params(t, params, options, Map.put(result, h.name, value))
+        value =
+          value
+          |> Enum.with_index()
+          |> Enum.map(fn {item, index} ->
+            do_parse_params(h.children, item, options, %{}, current_path ++ [index])
+          end)
+
+        do_parse_params(t, params, options, Map.put(result, h.name, value), path)
 
       {:ok, value} when nested == :list_of_single ->
         value =
-          Enum.map(value, fn
-            {:ok, item} ->
+          value
+          |> Enum.with_index()
+          |> Enum.map(fn
+            {{:ok, item}, _index} ->
               item
 
-            {:error, step, reason} ->
-              raise ParseError, attribute: h.name, step: step, reason: reason
+            {{:error, step, reason}, index} ->
+              raise ParseError,
+                attribute: h.name,
+                path: current_path ++ [index],
+                step: step,
+                reason: reason
           end)
 
-        parse_params(t, params, options, Map.put(result, h.name, value))
+        do_parse_params(t, params, options, Map.put(result, h.name, value), path)
 
       {:ok, value} when nested == nil ->
-        parse_params(t, params, options, Map.put(result, h.name, value))
+        do_parse_params(t, params, options, Map.put(result, h.name, value), path)
     end
   catch
-    :ignore -> parse_params(t, params, options, result)
+    :ignore -> do_parse_params(t, params, options, result, path)
   end
 end

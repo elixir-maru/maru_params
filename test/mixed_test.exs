@@ -132,6 +132,32 @@ defmodule Maru.Params.MixedTest do
              })
   end
 
+  test "nested error position" do
+    error =
+      assert_raise ParseError, ~r/Error Parsing Parameter `map.m1.d2`/, fn ->
+        T.nested(%{"map" => %{"m1" => %{"d2" => "x"}}})
+      end
+
+    assert :d2 == error.attribute
+    assert [:map, :m1, :d2] == error.path
+
+    error =
+      assert_raise ParseError, ~r/Error Parsing Parameter `map.m2\[1\].d2`/, fn ->
+        T.nested(%{"map" => %{"m2" => [%{"d2" => 22}, %{"d2" => "x"}]}})
+      end
+
+    assert [:map, :m2, 1, :d2] == error.path
+  end
+
+  test "list item error position" do
+    error =
+      assert_raise ParseError, ~r/Error Validating Parameter `fun\[1\]`/, fn ->
+        T.function(%{"fun" => "a,b"})
+      end
+
+    assert [:fun, 1] == error.path
+  end
+
   test "pipeline" do
     assert %{
              p1: "11",

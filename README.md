@@ -267,3 +267,33 @@ given fn %{age: age} -> age < 18 end do
   requires :id, String
 end
 ```
+
+## Errors
+
+A `Maru.Params.ParseError` is raised when a parameter can't be parsed or
+validated. Beside the `:attribute` (the name of the parameter itself), the
+exception carries the `:path` of the parameter within the whole params, and the
+message points to that position:
+
+```elixir
+params :create do
+  requires :user, Map do
+    requires :name, String
+    optional :tags, List[Atom], values: [:a, :b]
+  end
+end
+```
+
+```elixir
+iex> create(%{"user" => %{"name" => "x", "tags" => ["a", "c"]}})
+** (Maru.Params.ParseError) Error Validating Parameter `user.tags[1]`: allowed values: a, b
+```
+
+```elixir
+rescue
+  e in Maru.Params.ParseError ->
+    e.path                            # => [:user, :tags, 1]
+    e.attribute                       # => :tags
+    Maru.Params.ParseError.position(e) # => "user.tags[1]"
+end
+```
