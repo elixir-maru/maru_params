@@ -81,7 +81,7 @@ defmodule Maru.Params.ParserChainTest do
     end
 
     test "applies the inner type validators to every element" do
-      assert_raise ParseError, ~r/Validating Parameter `names`/, fn ->
+      assert_raise ParseError, ~r/Validating Parameter `names\[1\]`/, fn ->
         T.func_then_list_of_atom(%{"names" => ["a", "c"]})
       end
     end
@@ -91,7 +91,7 @@ defmodule Maru.Params.ParserChainTest do
     end
 
     test "propagates an inner parse error" do
-      assert_raise ParseError, ~r/Parsing Parameter `ns`/, fn ->
+      assert_raise ParseError, ~r/Parsing Parameter `ns\[1\]`/, fn ->
         T.func_then_list_of_integer(%{"ns" => "1,x"})
       end
     end
@@ -111,7 +111,7 @@ defmodule Maru.Params.ParserChainTest do
     end
 
     test "propagates a child parse error" do
-      assert_raise ParseError, ~r/Parsing Parameter `id`/, fn ->
+      assert_raise ParseError, ~r/Parsing Parameter `data\[0\].id`/, fn ->
         T.func_then_list_block(%{"data" => [%{"id" => "x"}]})
       end
     end

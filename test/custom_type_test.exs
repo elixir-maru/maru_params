@@ -1,7 +1,7 @@
 defmodule Maru.Params.CustomTypeTest do
   use ExUnit.Case, async: true
 
-  alias Maru.Params.TypeError
+  alias Maru.Params.{ParseError, TypeError}
 
   defmodule T do
     use Maru.Params.TestHelper
@@ -45,6 +45,23 @@ defmodule Maru.Params.CustomTypeTest do
              T.custom_type(%{a: %{id: "1", name: 2}}, keys: :atoms!)
 
     assert %{b: %{id: 1, name: "2"}} = T.custom_type(%{b: %{id: 1, name: 2}}, keys: :atoms!)
+  end
+
+  test "custom type error position" do
+    error =
+      assert_raise ParseError, ~r/Error Parsing Parameter `a.id`/, fn ->
+        T.custom_type(%{"a" => %{"id" => "x"}})
+      end
+
+    assert :id == error.attribute
+    assert [:a, :id] == error.path
+
+    error =
+      assert_raise ParseError, ~r/Error Parsing Parameter `c.map.m1\[1\].id`/, fn ->
+        T.custom_type(%{"c" => %{"map" => %{"m1" => [%{"id" => 1}, %{"id" => "x"}]}}})
+      end
+
+    assert [:c, :map, :m1, 1, :id] == error.path
   end
 
   test "derive" do

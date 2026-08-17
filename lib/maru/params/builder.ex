@@ -321,7 +321,12 @@ defmodule Maru.Params.Builder do
               {:ok, value} ->
                 value
                 |> Enum.map(fn item -> {:ok, item} end)
-                |> Enum.map(fn ok_item -> unquote(nested_ast).(ok_item, unquote(options)) end)
+                |> Enum.with_index()
+                |> Enum.map(fn {ok_item, index} ->
+                  Runtime.with_path(index, fn ->
+                    unquote(nested_ast).(ok_item, unquote(options))
+                  end)
+                end)
                 |> then(fn value -> {:ok, value} end)
 
               error ->
