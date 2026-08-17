@@ -30,6 +30,26 @@ defmodule Maru.Params.Runtime do
       reraise %{e | path: List.wrap(prefix) ++ (e.path || [])}, __STACKTRACE__
   end
 
+  @doc """
+  Put a list of params runtime under an extra ignore condition, used by
+  `include` when the include site sits within a `given`.
+  """
+  def under(runtimes, nil), do: runtimes
+
+  def under(runtimes, extra_ignore) do
+    Enum.map(runtimes, fn r ->
+      %{r | ignore_func: fn result -> extra_ignore.(result) or r.ignore_func.(result) end}
+    end)
+  end
+
+  defp do_parse_params(_params_runtime, params, _options, _result, path)
+       when not is_map(params) do
+    raise ParseError,
+      path: path,
+      step: :parse,
+      reason: "unknown input format, expected Map, got: #{inspect(params)}"
+  end
+
   defp do_parse_params([], _params, _options, result, _path), do: result
 
   defp do_parse_params([h | t], params, options, result, path) do

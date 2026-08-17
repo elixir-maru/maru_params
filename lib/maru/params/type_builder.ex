@@ -17,7 +17,7 @@ defmodule Maru.Params.TypeBuilder do
 
     quote do
       unquote(block)
-      @types {unquote(type), :type, Maru.Params.Builder.pop_params(__ENV__)}
+      @types {unquote(type), :type, Maru.Params.Builder.pop_block(__ENV__).params}
     end
   end
 
@@ -28,7 +28,9 @@ defmodule Maru.Params.TypeBuilder do
 
     quote do
       unquote(block)
-      @types {unquote(type), unquote(struct_or_type), Maru.Params.Builder.pop_params(__ENV__)}
+
+      @types {unquote(type), unquote(struct_or_type),
+              Maru.Params.Builder.pop_block(__ENV__).params}
     end
   end
 
@@ -39,7 +41,7 @@ defmodule Maru.Params.TypeBuilder do
     |> Module.get_attribute(:types)
     |> Enum.map(fn
       {type, :type, params} ->
-        params_runtime = Enum.map(params, &Map.get(&1, :runtime))
+        params_runtime = Maru.Params.Builder.runtime_list(params)
         maru_type_module = Module.concat(Maru.Params.Types, type)
 
         quote do
@@ -58,11 +60,13 @@ defmodule Maru.Params.TypeBuilder do
         end
 
       {type, :struct, params} ->
-        params_runtime = Enum.map(params, &Map.get(&1, :runtime))
+        params_runtime = Maru.Params.Builder.runtime_list(params)
         maru_type_module = Module.concat(Maru.Params.Types, type)
 
         attributes =
-          Enum.map(params, fn param -> param |> Map.get(:info) |> Keyword.get(:name) end)
+          params
+          |> Enum.reject(&Map.has_key?(&1, :include))
+          |> Enum.map(fn param -> param |> Map.get(:info) |> Keyword.get(:name) end)
 
         quote do
           defmodule unquote(type) do

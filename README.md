@@ -268,6 +268,108 @@ given fn %{age: age} -> age < 18 end do
 end
 ```
 
+### nested given
+
+Conditions compose:
+
+```elixir
+given type: :a do
+  requires :x, String        # type: :a
+
+  given style: :b do
+    requires :y, String      # type: :a and style: :b
+  end
+
+  requires :z, String        # type: :a
+end
+```
+
+The key of a `given` (atom and keyword forms) must be declared before the block
+at the same level, or listed in the schema's `reads:` option, otherwise the
+condition can never be true and it raises at compile time.
+
+## Reusable Params
+
+Define named params blocks in a `Maru.Params.Schema` module:
+
+```elixir
+defmodule MyApp.Params.Address do
+  use Maru.Params.Schema
+
+  params :basic do
+    requires :city, String
+    requires :zipcode, String, regex: :zipcode
+  end
+
+  params :full do
+    requires :address_line_1, String
+    optional :address_line_2, String
+    requires :city, String
+    requires :zipcode, String, regex: :zipcode
+  end
+end
+```
+
+and merge them into any level of another module with `include`:
+
+```elixir
+params :create do
+  requires :user, Map do
+    requires :name, String
+    include MyApp.Params.Address, only: :basic
+  end
+end
+```
+
+```elixir
+include Mod                        # every block, in declaration order
+include Mod, only: :basic          # one block
+include Mod, only: [:basic, :full] # several blocks
+include Mod, except: :full         # every block except
+```
+
+`params do ... end` defines an anonymous block named `:default`. `only:` and
+`except:` select blocks by name and are mutually exclusive. `include` takes one
+literal module, write one include per module.
+
+`include` only references the schema module inside a function body, so it is a
+runtime dependency: editing a schema never recompiles the modules including it.
+
+A schema can carry the `given` which selects it. The condition reads a field of
+the level it is included into, declared with `reads:`:
+
+```elixir
+defmodule MyApp.Params.TextMessage do
+  use Maru.Params.Schema, reads: [:type]
+
+  params do
+    given type: :text do
+      requires :content, String
+    end
+  end
+end
+```
+
+```elixir
+params :create do
+  requires :messages, List do
+    requires :type, Atom, values: [:text, :image]
+
+    include MyApp.Params.TextMessage
+    include MyApp.Params.ImageMessage
+  end
+end
+```
+
+Because nothing about the included module is checked at compile time, call
+`Maru.Params.verify_all/1` at boot or in a test. It checks that every included
+module is a schema, that every `only:` / `except:` block name exists, and that
+every `reads:` field is declared before the include:
+
+```elixir
+Maru.Params.verify_all([:my_app])
+```
+
 ## Errors
 
 A `Maru.Params.ParseError` is raised when a parameter can't be parsed or

@@ -4,13 +4,15 @@
   locals_without_parens: [
     params: :*,
     optional: :*,
-    requires: :*
+    requires: :*,
+    include: :*
   ],
   export: [
     locals_without_parens: [
       params: :*,
       optional: :*,
-      requires: :*
+      requires: :*,
+      include: :*
     ]
   ]
 ]
