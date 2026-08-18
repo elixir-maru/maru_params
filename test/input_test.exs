@@ -25,6 +25,11 @@ defmodule Maru.Params.InputTest do
       optional :a, Test.CustomTypeA
     end
 
+    params :dual_type do
+      # this name exists both as Test.DualType and Maru.Params.Types.Test.DualType
+      optional :d, Test.DualType
+    end
+
     params :plain_type do
       optional :p, Test.PlainType
       optional :ps, List[Test.PlainType]
@@ -72,7 +77,11 @@ defmodule Maru.Params.InputTest do
     assert [:a] == error.path
   end
 
-  test "a type module outside Maru.Params.Types resolves" do
+  test "a name taken under Maru.Params.Types resolves there, as 0.2.13 did" do
+    assert %{d: "namespace:1"} == T.dual_type(%{"d" => 1})
+  end
+
+  test "a type module outside Maru.Params.Types resolves when the name is free" do
     assert %{p: "plain:1"} == T.plain_type(%{"p" => 1})
     assert %{ps: ["plain:1", "plain:2"]} == T.plain_type(%{"ps" => [1, 2]})
     assert %{pv: "plain:ok"} == T.plain_type(%{"pv" => "ok"})
@@ -82,7 +91,7 @@ defmodule Maru.Params.InputTest do
     end
   end
 
-  test "a module which isn't a type still falls back to Maru.Params.Types" do
+  test "a module which isn't a type resolves under Maru.Params.Types" do
     # `Test.CustomTypeA` exists as a struct, the type module is
     # `Maru.Params.Types.Test.CustomTypeA`
     assert %Test.CustomTypeA{id: 1} = T.struct_type(%{"a" => %{"id" => "1"}}).a

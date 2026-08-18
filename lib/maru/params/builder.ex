@@ -479,19 +479,21 @@ defmodule Maru.Params.Builder do
 
   defp do_build_type(type) do
     cond do
-      type_module?(type) ->
-        [{:module, type}]
-
       type_module?(Module.concat(Maru.Params.Types, type)) ->
         [{:module, Module.concat(Maru.Params.Types, type)}]
+
+      type_module?(type) ->
+        [{:module, type}]
 
       true ->
         raise TypeError, type: type, reason: "Undefined Type"
     end
   end
 
-  # a type is either the named module itself or one under the
-  # Maru.Params.Types namespace
+  # A type lives under the Maru.Params.Types namespace (buildins and
+  # TypeBuilder registrations, exactly the names 0.2.13 resolved), or - only
+  # when that name is free - is the named module itself, so a custom type can
+  # be a plain module in the user's own namespace.
   defp type_module?(module) do
     match?({:module, _}, Code.ensure_compiled(module)) and
       function_exported?(module, :parse, 2) and
