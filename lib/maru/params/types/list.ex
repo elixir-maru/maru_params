@@ -38,13 +38,13 @@ defmodule Maru.Params.Types.List do
 
   def parse(input, args) when is_binary(input) do
     args
-    |> Map.get(:string_strategy, :codepoints)
+    |> Map.get(:string_strategy, :error)
     |> case do
-      :codepoints -> String.codepoints(input)
-      :charlist -> String.to_charlist(input)
-      :wrap -> List.wrap(input)
+      :codepoints -> parse(String.codepoints(input), args)
+      :charlist -> parse(String.to_charlist(input), args)
+      :error -> {:error, :parse, "expected list, got string: #{inspect(input)}"}
+      :wrap -> parse(List.wrap(input), args)
     end
-    |> parse(args)
   end
 
   def parse(input, _) do
